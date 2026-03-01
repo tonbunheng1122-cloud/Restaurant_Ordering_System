@@ -1,19 +1,21 @@
 <?php
+// for login page 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Support\Facades\Hash;
 
-
 # Import controller 
-use App\Http\Controllers\admin\dashboardController;
-use App\Http\Controllers\admin\productController;
-use App\Http\Controllers\admin\categoryController;
-use App\Http\Controllers\admin\menuController;
-use App\Http\Controllers\admin\tableController;
-use App\Http\Controllers\admin\reportController;
-use App\Http\Controllers\admin\settingController;
+use App\Http\Controllers\admin\DashboardController;
+use App\Http\Controllers\admin\ProductController;
+use App\Http\Controllers\admin\CategoryController;
+use App\Http\Controllers\admin\MenuController;
+use App\Http\Controllers\admin\ReservationController;
+use App\Http\Controllers\admin\ReportController;
+use App\Http\Controllers\admin\SettingController;
 // ================================================================================
 // --- LOGIN ROUTES ---
 Route::get('/login', function () {
@@ -34,7 +36,7 @@ Route::post('/login', function (Request $request) {
     return back()->withErrors(['username' => 'The provided credentials do not match our records.']);
 });
 // --- DASHBOARD ---
-Route::controller(dashboardController::class)->group(function () {   
+Route::controller(DashboardController::class)->group(function () {   
     Route::get('/dashboards', 'pageDashboard')->name('dashboard.index');
 });
 
@@ -72,30 +74,81 @@ Route::post('/logout', function (Request $request) {
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+
 // ================================================================================
 // add + all product
-Route::controller(productController::class)->group(function () {   
-    Route::get('/addproducts', 'pageAddproduct')->name('addproduct.index');
-    Route::get('/allproducts', 'pageAllproduct')->name('allproduct.index');
-});
-// add + all category
-Route::controller(categoryController::class)->group(function () {   
-    Route::get('/allcategories', 'pageAllcategory')->name('allcategory.index');
-    Route::get('/addcategories', 'pageAddcategory')->name('addcategory.index');   
+Route::controller(ProductController::class)->group(function () {
+
+    // LIST + SEARCH
+    Route::get('/allproducts', 'index')->name('allproduct.index');
+
+    // CREATE PAGE
+    Route::get('/addproducts', 'create')->name('addproduct.index');
+
+    // STORE
+    Route::post('/addproducts/store', 'store')->name('addproduct.store');
+
+    // EDIT
+    Route::get('/products/edit/{id}', 'edit')->name('product.edit');
+
+    // UPDATE
+    Route::put('/products/update/{id}', 'update')->name('product.update');
+
+    // DELETE
+    Route::delete('/products/delete/{id}', 'destroy')->name('product.destroy');
+
+    // SHOW (optional)
+    Route::get('/products/{id}', 'show')->name('product.show');
+
 });
 
-Route::controller(menuController::class)->group(function () {   
+// Category Group
+Route::controller(CategoryController::class)->group(function () {
+
+    Route::get('/allcategories','pageAllcategory')
+        ->name('allcategory.index');
+
+    Route::get('/addcategories','pageAddcategory')
+        ->name('addcategory.index');
+
+    Route::post('/addcategories/store','store')
+        ->name('addcategory.store');
+
+    Route::get('/categories/edit/{id}','edit')
+        ->name('category.edit');
+
+    Route::put('/categories/update/{id}','update')
+        ->name('category.update');
+
+    Route::delete('/categories/delete/{id}','destroy')
+        ->name('category.destroy');
+});
+
+Route::controller(MenuController::class)->group(function () {   
     Route::get('/menus', 'pageMenu')->name('menu.index');
 });
+// ====================================================================
 // add + all table
-Route::controller(tableController::class)->group(function () {   
-    Route::get('/alltables', 'pageAlltable')->name('alltable.index');
-    Route::get('/addtables', 'pageAddtable')->name('addtable.index');
+Route::controller(ReservationController::class)->group(function () {   
+    // FIX: Match method names to the Controller (index and create)
+    Route::get('/alltables', 'index')->name('alltable.index');
+    Route::get('/addtables', 'create')->name('addtable.index');
+    
+    // Form Actions
+    Route::post('/reservations', 'store')->name('reservations.store');
+    Route::delete('/reservations/{id}', 'destroy')->name('reservations.destroy');
+    Route::resource('reservations', ReservationController::class);
+    
+    Route::prefix('admin')->group(function () {
+    Route::get('reservations/search', [ReservationController::class, 'search'])->name('reservations.search');
+    Route::resource('reservations', ReservationController::class);
+    });
 });
-
-Route::controller(reportController::class)->group(function () {   
+// ====================================================================
+Route::controller(ReportController::class)->group(function () {   
     Route::get('/reports', 'pageReport')->name('report.index');
 });
-Route::controller(settingController::class)->group(function () {   
+Route::controller(SettingController::class)->group(function () {   
     Route::get('/settings', 'pageSetting')->name('setting.index');
-});
+}); 
