@@ -1,3 +1,8 @@
+@if(session('success'))
+<script>
+    alert("{{ session('success') }}");
+</script>
+@endif
 @vite('resources/css/app.css')
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -64,6 +69,7 @@
 
                 {{-- Product Table --}}
                 <div class="w-full overflow-x-auto rounded-xl border border-gray-100">
+                    
                     <table class="w-full text-left text-sm sm:text-base border-collapse">
 
                         <thead class="bg-gray-50 border-b">
