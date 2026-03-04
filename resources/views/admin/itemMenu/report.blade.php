@@ -14,9 +14,6 @@
         <aside > 
             @include('components.asidebar')
         </aside>
-
-        <div x-show="mobileMenuOpen" @click="mobileMenuOpen = false" class="fixed inset-0 bg-black/50 z-40 xl:hidden"></div>
-
         <main class="flex-1 overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
             <header class="flex items-center gap-4 mb-2 xl:hidden">
                 <button @click="mobileMenuOpen = true" class="bg-[#EE6D3C] text-white p-3 rounded-2xl shadow-lg">

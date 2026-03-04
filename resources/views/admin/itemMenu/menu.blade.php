@@ -1,6 +1,5 @@
 @vite('resources/css/app.css')
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
 <style> 
     body { font-family: 'Inter', sans-serif; } 
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
@@ -23,7 +22,6 @@
         .no-print { display: none !important; }
     }
 </style>
-
 <div class="bg-[#FFE4DB] min-h-screen" 
      x-data="{ 
         mobileMenuOpen: false, 
@@ -71,7 +69,6 @@
             return this.products.filter(p => p.category === this.activeCategory);
         }
      }">
-
     <div class="flex h-screen p-2 md:p-4 gap-4 md:gap-6 overflow-hidden relative no-print">
         <aside>@include('components.asidebar')</aside>
 
