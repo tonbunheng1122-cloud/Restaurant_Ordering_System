@@ -22,52 +22,46 @@
         .no-print { display: none !important; }
     }
 </style>
+
 <div class="bg-[#FFE4DB] min-h-screen" 
-     x-data="{ 
-        mobileMenuOpen: false, 
-        showOrderModal: false,
-        showQR: false,
-        cart: [],
-        activeCategory: 'All',
-        categories: [
-            {name: 'All', count: '200 Items'},
-            {name: 'Burger', count: '10 Items'},
-            {name: 'Soups', count: '10 Items'},
-            {name: 'Pasta', count: '10 Items'},
-            {name: 'Steak', count: '10 Items'},
-            {name: 'Pizza', count: '10 Items'},
-        ],
-        products: [
-            {id:1, name:'Classic Burger', price:9.99, category:'Burger', image:'https://via.placeholder.com/300'},
-            {id:2, name:'Tomato Soup', price:5.50, category:'Soups', image:'https://via.placeholder.com/300'},
-            {id:3, name:'Creamy Pasta', price:12.99, category:'Pasta', image:'https://via.placeholder.com/300'},
-            {id:4, name:'Ribeye Steak', price:24.99, category:'Steak', image:'https://via.placeholder.com/300'},
-            {id:5, name:'Pepperoni Pizza', price:14.50, category:'Pizza', image:'https://via.placeholder.com/300'},
-            {id:6, name:'Cheese Burger', price:10.99, category:'Burger', image:'https://via.placeholder.com/300'},
-        ],
-        addToCart(id, name, price, image) {
-            let item = this.cart.find(i => i.id === id);
-            if (item) { item.qty++; } 
-            else { this.cart.push({ id, name, price, image, qty: 1 }); }
-            this.showQR = false;
-        },
-        removeFromCart(id) {
-            let item = this.cart.find(i => i.id === id);
-            if (item && item.qty > 1) { item.qty--; } 
-            else { this.cart = this.cart.filter(i => i.id !== id); }
-            this.showQR = false;
-        },
-        get subtotal() {
-            return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-        },
-        printInvoice() {
-            if(this.cart.length > 0) { window.print(); } 
-            else { alert('Cart is empty!'); }
-        },
-        get filteredProducts() {
-            if(this.activeCategory === 'All') return this.products;
-            return this.products.filter(p => p.category === this.activeCategory);
-        }
+        x-data="{
+            categories: {{ $categories }},
+            products: {{ $products }},
+            activeCategory: null,
+            cart: [],
+            showOrderModal: false,
+            showQR: false,
+            get filteredProducts() {
+                if (!this.activeCategory) return this.products;
+                return this.products.filter(p => p.category === this.activeCategory);
+            },
+            get subtotal() {
+                return this.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+            },
+            getProductImage(image) {
+                if (image) return '/storage/' + image;
+                return '{{ asset('storage/default.png') }}';
+            },
+            addToCart(id, name, price, image) {
+                const existing = this.cart.find(i => i.id === id);
+                if (existing) {
+                    existing.qty++;
+                } else {
+                    this.cart.push({ id, name, price, image, qty: 1 });
+                }
+            },
+            removeFromCart(id) {
+                const existing = this.cart.find(i => i.id === id);
+                if (existing) {
+                    existing.qty--;
+                    if (existing.qty === 0) {
+                        this.cart = this.cart.filter(i => i.id !== id);
+                    }
+                }
+            },
+            printInvoice() {
+                window.print();
+            }
      }">
     <div class="flex h-screen p-2 md:p-4 gap-4 md:gap-6 overflow-hidden relative no-print">
         <aside>@include('components.asidebar')</aside>
@@ -82,32 +76,51 @@
             <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-4 mb-8">
                 <h2 class="text-2xl md:text-3xl text-gray-800 font-bold mb-6">Menu</h2>
 
+                <!-- Category Filters -->
                 <div class="flex overflow-x-auto gap-3 pb-4 mb-8 no-scrollbar">
+                    <!-- "All" button -->
+                    <button @click="activeCategory = null" 
+                            :class="activeCategory === null ? 'bg-[#EE6D3C] text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'" 
+                            class="flex-shrink-0 min-w-[120px] p-4 rounded-lg transition text-left">
+                        <div class="font-bold text-lg">All</div>
+                        <div class="text-xs opacity-80" x-text="products.length + ' items'"></div>
+                    </button>
+
                     <template x-for="cat in categories" :key="cat.name">
                         <button @click="activeCategory = cat.name" 
                                 :class="activeCategory === cat.name ? 'bg-[#EE6D3C] text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'" 
                                 class="flex-shrink-0 min-w-[120px] p-4 rounded-lg transition text-left">
                             <div class="font-bold text-lg" x-text="cat.name"></div>
-                            <div class="text-xs opacity-80" x-text="cat.count"></div>
+                            <div class="text-xs opacity-80" x-text="cat.count + ' items'"></div>
                         </button>
                     </template>
                 </div>
 
                 <div class="flex flex-col xl:flex-row gap-8">
+                    <!-- Product Grid -->
                     <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <template x-if="filteredProducts.length === 0">
+                            <div class="col-span-3 text-center text-gray-400 py-20">
+                                <p class="text-xl">No products found.</p>
+                            </div>
+                        </template>
+
                         <template x-for="product in filteredProducts" :key="product.id">
                             <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden group">
                                 <div class="p-3">
-                                    <img :src="product.image" class="w-full h-40 md:h-48 object-cover rounded-2xl group-hover:scale-105 transition">
+                                    <!-- ✅ FIXED: Uses product.image if available, else falls back to default -->
+                                    <img :src="getProductImage(product.image)"
+                                         class="w-full h-40 md:h-48 object-cover rounded-2xl group-hover:scale-105 transition"
+                                         :alt="product.name">
                                 </div>
                                 <div class="p-5 pt-0">
-                                    <div class="text-gray-400 font-bold" x-text="product.name"></div>
+                                    <div class="text-gray-700 font-bold text-sm" x-text="product.name"></div>
                                     <div class="flex justify-between items-center mt-2">
                                         <span class="text-[#EE6D3C] font-bold text-xl" x-text="'$' + product.price.toFixed(2)"></span>
                                         <div class="flex items-center gap-2">
-                                            <button @click="removeFromCart(product.id)" class="w-8 h-8 rounded-lg bg-gray-100">-</button>
+                                            <button @click="removeFromCart(product.id)" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 transition font-bold text-gray-600">-</button>
                                             <span class="font-bold w-4 text-center" x-text="cart.find(i => i.id === product.id)?.qty || 0">0</span>
-                                            <button @click="addToCart(product.id, product.name, product.price, product.image)" class="w-8 h-8 rounded-lg bg-[#EE6D3C] text-white">+</button>
+                                            <button @click="addToCart(product.id, product.name, product.price, getProductImage(product.image))" class="w-8 h-8 rounded-lg bg-[#EE6D3C] text-white hover:bg-orange-600 transition font-bold">+</button>
                                         </div>
                                     </div>
                                 </div>
@@ -115,6 +128,7 @@
                         </template>
                     </div>
 
+                    <!-- Checkout Sidebar -->
                     <div class="w-full xl:w-[380px] flex-shrink-0">
                         <div class="border border-gray-300 rounded-xl p-6 sticky top-4 bg-white shadow-sm">
                             <h3 class="text-2xl font-bold text-center mb-6 border-b pb-2">Checkout</h3>
@@ -136,7 +150,7 @@
                                 </div>
                                 <button @click="showOrderModal = true" 
                                         :disabled="cart.length === 0"
-                                        class="w-full bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-xl hover:bg-orange-600 transition disabled:opacity-50">
+                                        class="w-full bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-xl hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
                                     Order
                                 </button>
                             </div>
@@ -147,6 +161,7 @@
         </main>
     </div>
 
+    <!-- Order Modal -->
     <div x-show="showOrderModal" x-cloak x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 no-print">
         <div class="bg-[#D9D9D9] w-full max-w-2xl rounded-3xl p-6 md:p-10 shadow-2xl relative">
             <button @click="showOrderModal = false; showQR = false" class="absolute top-6 left-6 bg-[#EE6D3C] text-white p-2 rounded-xl hover:scale-105 transition">
@@ -166,24 +181,29 @@
                     <template x-for="item in cart" :key="item.id">
                         <div class="grid grid-cols-3 items-center border-b border-gray-100 pb-4">
                             <div class="flex items-center gap-3">
-                                <img :src="item.image" class="w-12 h-12 rounded-xl object-cover" />
-                                <span class="font-bold text-gray-800" x-text="item.name"></span>
+                                <!-- ✅ FIXED: Uses the image stored in cart item -->
+                                <img :src="item.image" 
+                                     :alt="item.name"
+                                     class="w-12 h-12 rounded-xl object-cover" />
+                                <span class="font-bold text-gray-800 text-sm" x-text="item.name"></span>
                             </div>
                             <div class="flex justify-center items-center gap-3">
-                                <button @click="removeFromCart(item.id)" class="w-6 h-6 bg-gray-100 rounded text-gray-600">-</button>
+                                <button @click="removeFromCart(item.id)" class="w-6 h-6 bg-gray-100 rounded text-gray-600 hover:bg-gray-200 transition font-bold">-</button>
                                 <span class="font-bold" x-text="item.qty"></span>
-                                <button @click="addToCart(item.id, item.name, item.price, item.image)" class="w-6 h-6 bg-[#EE6D3C] text-white rounded">+</button>
+                                <button @click="addToCart(item.id, item.name, item.price, item.image)" class="w-6 h-6 bg-[#EE6D3C] text-white rounded hover:bg-orange-600 transition font-bold">+</button>
                             </div>
                             <div class="text-right text-[#EE6D3C] font-bold" x-text="'$' + (item.price * item.qty).toFixed(2)"></div>
                         </div>
                     </template>
                 </div>
 
+                <!-- QR Code Section -->
                 <div x-show="showQR" x-transition class="flex flex-col items-center mb-4 p-4 bg-gray-50 rounded-2xl border-2 border-[#EE6D3C]">
-                    <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TotalAmount:' + subtotal" alt="QR Code" class="w-32 h-32" />
+                    <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TotalAmount:' + subtotal.toFixed(2)" alt="QR Code" class="w-32 h-32" />
                     <p class="mt-2 text-sm font-bold text-gray-600">Scan to pay $<span x-text="subtotal.toFixed(2)"></span></p>
                 </div>
 
+                <!-- Total -->
                 <div class="bg-gray-50 p-6 rounded-2xl border-2 border-dashed border-gray-300 space-y-2">
                     <div class="flex justify-between text-gray-800 font-black text-xl">
                         <span>Total price($):</span>
@@ -191,9 +211,10 @@
                     </div>
                 </div>
 
+                <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 mt-8">
-                    <button class="flex-1 bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-lg shadow-md hover:scale-[1.02] transition">Save Order</button>
-                    <button @click="printInvoice()" class="flex-1 bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-lg shadow-md hover:scale-[1.02] transition">Print Invoice</button>
+                    <button class="flex-1 bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-lg shadow-md hover:scale-[1.02] hover:bg-orange-600 transition">Save Order</button>
+                    <button @click="printInvoice()" class="flex-1 bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-lg shadow-md hover:scale-[1.02] hover:bg-orange-600 transition">Print Invoice</button>
                 </div>
 
                 <button @click="showQR = !showQR" class="w-full bg-[#333333] text-white py-4 rounded-2xl font-bold text-lg mt-4 shadow-lg hover:bg-black transition flex items-center justify-center gap-3">
@@ -206,6 +227,7 @@
         </div>
     </div>
 
+    <!-- Printable Invoice (hidden on screen, visible on print) -->
     <div id="printable-invoice" class="hidden">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold uppercase underline">Restaurant Receipt</h1>
