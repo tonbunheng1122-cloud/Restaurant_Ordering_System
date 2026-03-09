@@ -22,7 +22,7 @@
         .no-print { display: none !important; }
     }
 </style>
-
+<title>FastBite | Flavor Unleashed</title>
 <div class="bg-[#FFE4DB] min-h-screen" 
         x-data="{
             categories: {{ $categories }},
@@ -40,7 +40,7 @@
             },
             getProductImage(image) {
                 if (image) return '/storage/' + image;
-                return '{{ asset('storage/default.png') }}';
+                return '/storage/default.png';   
             },
             addToCart(id, name, price, image) {
                 const existing = this.cart.find(i => i.id === id);
@@ -64,7 +64,10 @@
             }
      }">
     <div class="flex h-screen p-2 md:p-4 gap-4 md:gap-6 overflow-hidden relative no-print">
-        <aside>@include('components.asidebar')</aside>
+        <!-- Sidebar Components -->
+        <aside>
+            @include('components.asidebar')
+        </aside>
 
         <main class="flex-1 overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
             <button @click="mobileMenuOpen = true" class="bg-[#EE6D3C] text-white p-3 rounded-2xl shadow-lg block md:hidden">

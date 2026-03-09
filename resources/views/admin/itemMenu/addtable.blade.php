@@ -5,6 +5,7 @@
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #ffccbc; border-radius: 10px; }
 </style>
+<title>FastBite | Flavor Unleashed</title>
 <div class="bg-[#FFE4DB] min-h-screen">
     <div class="flex flex-col lg:flex-row min-h-screen p-3 sm:p-4 gap-4 sm:gap-6">
         <aside class="hidden xl:block xl:w-64 flex-shrink-0"> 

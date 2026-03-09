@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Layouts\UserwebController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\admin\ProductController;
@@ -10,14 +11,22 @@ use App\Http\Controllers\admin\ReservationController;
 use App\Http\Controllers\admin\ReportController;
 use App\Http\Controllers\admin\SettingController;
 
+
+
 // ================================================================================
 // --- AUTHENTICATION ROUTES (Login/Register/Logout) ---
+
+// ================================================================================
+
+// testing for website
+
+Route::get('/', [UserwebController::class, 'pages'])->name('userweb.index');
 // ================================================================================
 
 // Redirect root to login
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+//Route::get('/', function () {
+//    return redirect()->route('login');
+//});
 
 // Login
 Route::get('/login', [LoginController::class, 'showLogin'])->name('login');

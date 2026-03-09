@@ -7,7 +7,7 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #EE6D3C; border-radius: 10px; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
 </style>
-
+<title>FastBite | Flavor Unleashed</title>
 <div class="bg-[#FFE4DB] min-h-screen" x-data="{ mobileMenuOpen: false, activeTab: 'All' }">
     <div class="flex h-screen p-2 md:p-4 gap-4 md:gap-6 overflow-hidden relative">
         

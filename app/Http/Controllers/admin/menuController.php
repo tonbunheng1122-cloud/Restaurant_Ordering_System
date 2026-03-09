@@ -30,34 +30,32 @@ class MenuController extends Controller
                     'name' => $p->name,
                     'price' => (float)$p->price,
                     'category' => $p->category->name ?? 'Uncategorized',
-                    'image' => $p->image 
-                        ? asset('storage/'.$p->image) 
-                        : asset('storage/default.png')
+                    'image' => $p->images[0] ?? null ,
                 ];
             });
 
         return view('admin.itemMenu.menu', compact('categories','products'));
     }
 
-    // Store new Product
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|max:255',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|max:2048'
-        ]);
+    // // Store new Product
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'name' => 'required|max:255',
+    //         'price' => 'required|numeric|min:0',
+    //         'category_id' => 'required|exists:categories,id',
+    //         'image' => 'nullable|image|max:2048'
+    //     ]);
 
-        $data = $request->only(['name', 'price', 'category_id']);
+    //     $data = $request->only(['name', 'price', 'category_id']);
 
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('menus', 'public');
-            $data['image'] = $path;
-        }
+    //     if ($request->hasFile('image')) {
+    //         $path = $request->file('image')->store('menus', 'public');
+    //         $data['image'] = $path;
+    //     }
 
-        Product::create($data); // use Product model
+    //     Product::create($data); // use Product model
 
-        return redirect()->route('menu.page')->with('success', 'Menu Item Created Successfully!');
-    }
+    //     return redirect()->route('menu.page')->with('success', 'Menu Item Created Successfully!');
+    // }
 }

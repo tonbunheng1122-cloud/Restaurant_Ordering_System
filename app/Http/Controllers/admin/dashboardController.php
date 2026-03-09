@@ -10,4 +10,5 @@ class DashboardController extends Controller
     public function pageDashboard() {
        return view('admin.itemMenu.dashboard');
     }
+    
 }

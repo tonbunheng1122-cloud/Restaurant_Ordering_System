@@ -1,4 +1,5 @@
 @vite('resources/css/app.css')
+<title>FastBite | Flavor Unleashed</title>
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 p-4">
   <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
     <div class="text-center mb-6">

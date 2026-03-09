@@ -1,5 +1,7 @@
 @vite('resources/css/app.css')
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<!-- for chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style> 
     body { font-family: 'Inter', sans-serif; } 
@@ -37,7 +39,7 @@
                                 <h2 class="text-xl md:text-2xl text-gray-800 font-bold tracking-tight">
                                     Dashboard Overview
                                 </h2>
-                                <p class="text-gray-400 text-xs md:text-sm font-medium">Monday, 02 March 2026</p>
+                                <p class="text-gray-500">Welcome back, Admin! Here's a summary of your restaurant's performance.</p>
                             </div>
                         </div>
 
@@ -155,38 +157,63 @@
                         <div class="bg-white rounded-2xl shadow-sm border border-orange-50 p-6">
                             <h3 class="font-bold text-gray-800 mb-4">Quick Actions</h3>
                             <div class="grid grid-cols-2 gap-3">
-                                <button class="flex flex-col items-center justify-center p-4 bg-orange-50/50 rounded-xl hover:bg-[#EE6D3C] hover:text-white transition-all group">
-                                    <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                    <span class="text-[10px] font-bold uppercase">Add Product</span>
-                                </button>
-                                <button class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl hover:bg-[#EE6D3C] hover:text-white transition-all group">
-                                    <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                                    <span class="text-[10px] font-bold uppercase">Tables</span>
-                                </button>
+                            <a href="{{ route('allproduct.index') }}" class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl hover:bg-[#EE6D3C] hover:text-white transition-all group">
+                                    <button class="flex flex-col items-center justify-center">
+                                        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                        <span class="text-[10px] font-bold uppercase">Add Product</span>
+                                    </button>
+                                </a>
+                                <a href="{{ route('alltable.index') }}" class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl hover:bg-[#EE6D3C] hover:text-white transition-all group">
+                                    <button class="flex flex-col items-center justify-center">
+                                        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                        <span class="text-[10px] font-bold uppercase">Tables</span>
+                                    </button>
+                                </a>
+                                <a href="{{ route('setting.index') }}" class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl hover:bg-[#EE6D3C] hover:text-white transition-all group">
+                                    <button class="flex flex-col items-center justify-center">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        <span class="text-[10px] font-bold uppercase">Add User</span>
+                                    </button>
+                                </a>
                             </div>
                         </div>
+                    </div> 
+                    <div class="bg-white rounded-2xl shadow-sm border border-orange-50 p-6 lg:col-span-3">
+                        <h3 class="font-bold text-gray-800 mb-4">Sales Overview</h3>
 
-                        <div class="bg-[#2D2D2D] rounded-2xl shadow-sm p-6 text-white relative overflow-hidden">
-                            <div class="relative z-10">
-                                <h3 class="font-bold mb-4 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-[#EE6D3C]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd"/></svg>
-                                    System Health
-                                </h3>
-                                <div class="space-y-3 text-xs">
-                                    <div class="flex justify-between">
-                                        <span class="opacity-60">Database</span>
-                                        <span class="text-green-400 font-bold">Healthy</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="opacity-60">Storage</span>
-                                        <span class="text-white">1.2GB Used</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="absolute -right-4 -bottom-4 opacity-10">
-                                <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            </div>
-                        </div>
+                        <canvas id="salesChart" height="120"></canvas>
+
+                        <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+
+                            const ctx = document.getElementById('salesChart');
+
+                            new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+                                    datasets: [{
+                                        label: 'Sales ($)',
+                                        data: [1200,1900,3000,2500,2200,3200],
+                                        borderColor: '#EE6D3C',
+                                        backgroundColor: 'rgba(238,109,60,0.2)',
+                                        borderWidth: 3,
+                                        tension: 0.4,
+                                        fill: true
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            display: true
+                                        }
+                                    }
+                                }
+                            });
+
+                        });
+                        </script>
                     </div>
                 </div>
             </div>
