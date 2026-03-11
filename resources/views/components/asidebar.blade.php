@@ -36,8 +36,10 @@
 
         <!-- HEADER -->
         <div class="flex justify-between items-center w-full mb-12">
-            <h1 class="text-2xl font-bold tracking-tight">
-                RESTAURANT
+            <h1 class="text-2xl font-bold">
+                <!-- RESTAURANT  -->
+                 <!-- <span class="text-[#E15E3A]">FAST</span><span class="text-black">BITE</span> -->
+                    RESTAURANT
             </h1>
             <button @click="open = false" class="md:hidden">
                 ✕

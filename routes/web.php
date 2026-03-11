@@ -71,28 +71,28 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // --- MENU ---
-    Route::get('/menus', [MenuController::class, 'pageMenu'])->name('menu.index');
+    Route::get('/menu', [MenuController::class, 'pageMenu'])->name('menu.index');
 
-// --- RESERVATION / TABLE MANAGEMENT ---
-Route::controller(ReservationController::class)->group(function () {   
-    // បង្កើត Route ឱ្យចំឈ្មោះដែល Laravel កំពុងទាមទារ (reservations.index)
-    Route::get('/alltables', 'index')->name('alltable.index'); // សម្រាប់ link ក្នុង menu
-    Route::get('/reservations', 'index')->name('reservations.index'); // បន្ថែមនេះដើម្បីបំបាត់ Error
-    
-    Route::get('/addtables', 'create')->name('addtable.index');
-    Route::post('/reservations', 'store')->name('reservations.store');
-    Route::delete('/reservations/{id}', 'destroy')->name('reservations.destroy');
-});
+    // --- RESERVATION / TABLE MANAGEMENT ---
+    Route::controller(ReservationController::class)->group(function () {   
+        // បង្កើត Route ឱ្យចំឈ្មោះដែល Laravel កំពុងទាមទារ (reservations.index)
+        Route::get('/alltables', 'index')->name('alltable.index'); // សម្រាប់ link ក្នុង menu
+        Route::get('/reservations', 'index')->name('reservations.index'); // បន្ថែមនេះដើម្បីបំបាត់ Error
+        
+        Route::get('/addtables', 'create')->name('addtable.index');
+        Route::post('/reservations', 'store')->name('reservations.store');
+        Route::delete('/reservations/{id}', 'destroy')->name('reservations.destroy');
+    });
 
-// Resource & Search (ដាក់នៅក្រៅ Controller Group ដើម្បីកុំឱ្យជាន់គ្នា)
-Route::prefix('admin')->group(function () {
-    Route::get('reservations/search', [ReservationController::class, 'search'])->name('reservations.search');
-    // បើអ្នកប្រើ resource វានឹងបង្កើត index, create, store... ឱ្យដោយស្វ័យប្រវត្តិ
-    Route::resource('reservations', ReservationController::class)->except(['index', 'create', 'store', 'destroy']);
-});
+    // Resource & Search (ដាក់នៅក្រៅ Controller Group ដើម្បីកុំឱ្យជាន់គ្នា)
+    Route::prefix('admin')->group(function () {
+        Route::get('reservations/search', [ReservationController::class, 'search'])->name('reservations.search');
+        // បើអ្នកប្រើ resource វានឹងបង្កើត index, create, store... ឱ្យដោយស្វ័យប្រវត្តិ
+        Route::resource('reservations', ReservationController::class)->except(['index', 'create', 'store', 'destroy']);
+    });
 
-    // --- REPORTS & SETTINGS ---
-    Route::get('/reports', [ReportController::class, 'pageReport'])->name('report.index');
-    Route::get('/settings', [SettingController::class, 'pageSetting'])->name('setting.index');
+        // --- REPORTS & SETTINGS ---
+        Route::get('/reports', [ReportController::class, 'pageReport'])->name('report.index');
+        Route::get('/settings', [SettingController::class, 'pageSetting'])->name('setting.index');
 
-});
+    });

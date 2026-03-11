@@ -35,6 +35,25 @@
                 if (!this.activeCategory) return this.products;
                 return this.products.filter(p => p.category === this.activeCategory);
             },
+            saveOrder() {
+                fetch('/order/store', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        cart: this.cart,
+                        total: this.subtotal
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert('Order Saved!');
+                    this.cart = [];
+                    this.showOrderModal = false;
+                });
+            },
             get subtotal() {
                 return this.cart.reduce((sum, item) => sum + item.price * item.qty, 0);
             },
@@ -111,9 +130,9 @@
                         <template x-for="product in filteredProducts" :key="product.id">
                             <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden group">
                                 <div class="p-3">
-                                    <!-- ✅ FIXED: Uses product.image if available, else falls back to default -->
+                                    <!-- Uses product.image if available, else falls back to default -->
                                     <img :src="getProductImage(product.image)"
-                                         class="w-full h-40 md:h-48 object-cover rounded-2xl group-hover:scale-105 transition"
+                                         class="w-full h-40 md:h-48 object-cover rounded-2xl group-hover:scale-105 transition cursor-pointer" 
                                          :alt="product.name">
                                 </div>
                                 <div class="p-5 pt-0">
@@ -184,7 +203,7 @@
                     <template x-for="item in cart" :key="item.id">
                         <div class="grid grid-cols-3 items-center border-b border-gray-100 pb-4">
                             <div class="flex items-center gap-3">
-                                <!-- ✅ FIXED: Uses the image stored in cart item -->
+                                <!-- Uses the image stored in cart item -->
                                 <img :src="item.image" 
                                      :alt="item.name"
                                      class="w-12 h-12 rounded-xl object-cover" />
@@ -216,7 +235,9 @@
 
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 mt-8">
-                    <button class="flex-1 bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-lg shadow-md hover:scale-[1.02] hover:bg-orange-600 transition">Save Order</button>
+                    <button 
+                    @click="saveOrder()"
+                    class="flex-1 bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-lg shadow-md hover:scale-[1.02] hover:bg-orange-600 transition">Save Order</button>
                     <button @click="printInvoice()" class="flex-1 bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-lg shadow-md hover:scale-[1.02] hover:bg-orange-600 transition">Print Invoice</button>
                 </div>
 

@@ -23,7 +23,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </a>
-                    <h2 class="text-2xl md:text-3xl text-gray-800 font-bold tracking-tight">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">
                         {{ isset($category) ? 'Edit Category' : 'Create New Category' }}
                     </h2>
                 </div>
@@ -82,15 +82,9 @@
 
                     <div class="flex flex-col sm:flex-row justify-end gap-4 mt-10 md:mt-16 border-t pt-8">
                         <button type="submit" 
-                            class="bg-[#EE6D3C] text-white px-12 py-3 rounded-xl font-bold text-lg md:text-xl hover:bg-[#d45a2d] 
-                            transition-all transform active:scale-95 shadow-md w-full sm:w-auto">
+                            class="px-8 py-2 bg-[#EE6D3C] text-white font-bold rounded-xl shadow-md hover:scale-105 transition-transform">
                             {{ isset($category) ? 'Update Category' : 'Save Category' }}
                         </button>
-                        <a href="{{ route('allcategory.index') }}" 
-                            class="bg-[#9E9E9E] text-white px-12 py-3 rounded-xl font-bold text-lg md:text-xl hover:bg-gray-500 
-                            transition-all text-center w-full sm:w-auto">
-                            Cancel
-                        </a>
                     </div>
                 </form>
             </div>

@@ -18,7 +18,7 @@
                     <a href="{{ route('allproduct.index') }}" class="bg-[#EE6D3C] text-white p-2 rounded-xl hover:scale-105 transition shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                     </a>
-                    <h2 class="text-xl sm:text-3xl text-gray-800 font-bold">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">
                         {{ isset($product) ? 'Edit Product' : 'Create Product' }}
                     </h2>
                 </div>
@@ -80,7 +80,8 @@
                     </div>
 
                     <div class="flex justify-end mt-8">
-                        <button type="submit" class="bg-[#EE6D3C] text-white px-14 py-3 rounded-xl font-bold hover:bg-[#d45a2d] transition-all shadow-md">
+                        <button type="submit" 
+                        class="px-8 py-2 bg-[#EE6D3C] text-white font-bold rounded-xl shadow-md hover:scale-105 transition-transform">
                             {{ isset($product) ? 'Update Product' : 'Save Product' }}
                         </button>
                     </div>

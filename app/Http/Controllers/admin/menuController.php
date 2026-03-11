@@ -36,26 +36,23 @@ class MenuController extends Controller
 
         return view('admin.itemMenu.menu', compact('categories','products'));
     }
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'category_id' => 'required|exists:categories,id',
+            'image' => 'nullable|image|max:2048', // Optional image upload
+        ]);
 
-    // // Store new Product
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'name' => 'required|max:255',
-    //         'price' => 'required|numeric|min:0',
-    //         'category_id' => 'required|exists:categories,id',
-    //         'image' => 'nullable|image|max:2048'
-    //     ]);
+        // Handle image upload if provided
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('public/images');
+            $validated['image'] = basename($path); // Store only the filename
+        }
 
-    //     $data = $request->only(['name', 'price', 'category_id']);
+        Product::create($validated);
 
-    //     if ($request->hasFile('image')) {
-    //         $path = $request->file('image')->store('menus', 'public');
-    //         $data['image'] = $path;
-    //     }
-
-    //     Product::create($data); // use Product model
-
-    //     return redirect()->route('menu.page')->with('success', 'Menu Item Created Successfully!');
-    // }
+        return redirect()->back()->with('success', 'Menu item added successfully!');
+    }
 }

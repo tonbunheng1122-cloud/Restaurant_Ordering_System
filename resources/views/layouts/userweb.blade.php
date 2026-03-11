@@ -877,10 +877,6 @@
                     <div class="dish-name">Truffle Pizza</div>
                     <div class="dish-desc">Wild mushrooms, truffle oil, and hand-pulled mozzarella on a thin crust.</div>
                     <div class="dish-footer">
-                        <div class="dish-price">$18</div>
-                        <button class="add-btn" onclick="addToCart('Truffle Pizza', 18)">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -896,10 +892,6 @@
                     <div class="dish-name">Double Smash</div>
                     <div class="dish-desc">Two crispy smash patties, aged cheddar, caramelized onions, and secret sauce.</div>
                     <div class="dish-footer">
-                        <div class="dish-price">$14</div>
-                        <button class="add-btn" onclick="addToCart('Double Smash Burger', 14)">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -915,10 +907,6 @@
                     <div class="dish-name">Dragon Roll</div>
                     <div class="dish-desc">Avocado-topped tempura shrimp roll with spicy mayo and eel sauce.</div>
                     <div class="dish-footer">
-                        <div class="dish-price">$22</div>
-                        <button class="add-btn" onclick="addToCart('Dragon Roll', 22)">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -933,10 +921,19 @@
                     <div class="dish-name">Classic Margherita</div>
                     <div class="dish-desc">San Marzano tomato, fresh basil, and buffalo mozzarella on a wood-fired base.</div>
                     <div class="dish-footer">
-                        <div class="dish-price">$15</div>
-                        <button class="add-btn" onclick="addToCart('Classic Margherita', 15)">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="dish-card reveal" data-category="pizza" style="transition-delay:0.05s">
+                <div class="dish-img-wrap">
+                    <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=700&q=80" alt="Margherita">
+                    <div class="dish-rating">⭐ 4.6</div>
+                </div>
+                <div class="dish-body">
+                    <div class="dish-category">Pizza</div>
+                    <div class="dish-name">Classic Margherita</div>
+                    <div class="dish-desc">San Marzano tomato, fresh basil, and buffalo mozzarella on a wood-fired base.</div>
+                    <div class="dish-footer">
                     </div>
                 </div>
             </div>
@@ -951,10 +948,6 @@
                     <div class="dish-name">Smoky BBQ</div>
                     <div class="dish-desc">Slow-cooked pulled pork, jalapeño slaw, smoked gouda, and hickory BBQ.</div>
                     <div class="dish-footer">
-                        <div class="dish-price">$16</div>
-                        <button class="add-btn" onclick="addToCart('Smoky BBQ Burger', 16)">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1015,7 +1008,7 @@
             </div>
             <div class="footer-bottom">
                 <span>© 2026 FastBite. All rights reserved.</span>
-                <span style="color:rgba(255,255,255,0.3)">Made with ❤️ for food lovers</span>
+                <!-- <span style="color:rgba(255,255,255,0.3)">Made with ❤️ for food lovers</span> -->
             </div>
         </div>
     </footer>

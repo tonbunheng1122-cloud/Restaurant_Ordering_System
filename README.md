@@ -57,3 +57,29 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+
+===========================================================================================
+
+## INSTALL (PHP 8.4 , LARAVEL 12)
+<!-- PHP Last version -->
+composer install
+
+npm install
+
+cp .env.example .env
+
+php artisan key:generate
+
+php artisan migrate(yes)
+
+<!-- Tailwindcss -->
+npm install tailwindcss @tailwindcss/vite
+
+## RUN (Open Terminal)
+RUN FOR MAC : npm run dev & php artisan serve 
+
+RUN FOR WINDONW : npm run dev , (NEW TERMINAL) : php artisan serve 
+===========================================================================================
+

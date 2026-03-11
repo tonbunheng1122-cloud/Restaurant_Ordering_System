@@ -29,7 +29,7 @@
 
             <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-4 mb-8">
                 <div class="mb-6 sm:mb-8">
-                    <h2 class="text-xl sm:text-2xl md:text-3xl text-gray-800 font-bold">Category List</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Category List</h2>
                 </div>
                 <!-- Search and create button -->
                 <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mb-6">

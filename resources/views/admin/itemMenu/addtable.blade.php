@@ -20,7 +20,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </a>
-                    <h2 class="text-xl sm:text-2xl lg:text-3xl text-gray-800 font-extrabold tracking-tight">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">
                         {{ isset($reservation) ? 'Edit Table' : 'Add New Table' }}
                     </h2>
                 </div>
@@ -63,14 +63,6 @@
                                        class="w-full bg-[#E9EEF2] border-none rounded-xl p-3 focus:ring-orange-400 outline-none transition"
                                        placeholder="Click a table on the right">
                             </div>
-                            <div class="flex gap-4 pt-6">
-                                <button type="submit" class="bg-[#EE6D3C] text-white px-12 py-3 rounded-xl font-bold text-xl hover:bg-[#d45a2d] transition-all transform active:scale-95 shadow-md">
-                                    {{ isset($reservation) ? 'Update' : 'Submit' }}
-                                </button>
-                                <a href="{{ route('alltable.index') }}" class="bg-[#D1D1D1] text-white px-12 py-3 rounded-xl font-bold text-xl hover:bg-gray-400 transition-all flex items-center justify-center">
-                                    Cancel
-                                </a>
-                            </div>
                         </div>
                         <div class="w-full lg:w-2/3 bg-[#D9D9D9] rounded-[2rem] p-6 sm:p-8 lg:p-10 min-h-[500px]">
                             <h3 class="text-xl font-bold text-gray-700 mb-8 sm:mb-12">Select Table</h3>
@@ -90,8 +82,14 @@
                                     </div> 
                                 @endfor
                             </div>
-                        </div>
+                        </div> 
                     </div>
+                        <div class="flex gap-4 pt-6">
+                            <button type="submit" 
+                            class="px-8 py-2 bg-[#EE6D3C] text-white font-bold rounded-xl shadow-md hover:scale-105 transition-transform">
+                                    {{ isset($reservation) ? 'Update' : 'Submit' }}
+                            </button>
+                        </div>
                 </form>
             </div>
         </main>

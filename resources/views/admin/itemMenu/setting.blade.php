@@ -10,7 +10,6 @@
 <title>FastBite | Flavor Unleashed</title>
 <div class="bg-[#FFE4DB] min-h-screen" x-data="{ mobileMenuOpen: false, tab: 'general' }">
     <div class="flex h-screen p-2 md:p-4 gap-4 md:gap-6 overflow-hidden relative">
-
         <aside>
             @include('components.asidebar')
         </aside>
@@ -18,7 +17,7 @@
         <div x-show="mobileMenuOpen" @click="mobileMenuOpen = false" 
              class="fixed inset-0 bg-black/50 z-40 xl:hidden backdrop-blur-sm transition-opacity"></div>
 
-        <main class="flex-1 overflow-y-auto pr-1 py-4 custom-scrollbar">
+        <main class="flex-1 overflow-y-auto pr-1 custom-scrollbar">
             
             <header class="flex items-center justify-between mb-4 xl:hidden">
                 <button @click="mobileMenuOpen = true" class="bg-[#EE6D3C] text-white p-3 rounded-xl shadow-md">
