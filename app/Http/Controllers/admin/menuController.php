@@ -4,55 +4,92 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Product; 
+use Illuminate\Support\Facades\DB;
+
+use App\Models\Product;
 use App\Models\Category;
+use App\Models\Order;
+use App\Models\OrderItem;
 
 class MenuController extends Controller
 {
+    // ==============================
     // Show Menu Page
+    // ==============================
     public function pageMenu()
     {
         $categories = Category::withCount('products')
             ->get()
-            ->map(function($cat){
+            ->map(function ($cat) {
                 return [
                     'id' => $cat->id,
                     'name' => $cat->name,
-                    'count' => $cat->products_count.' Items'
+                    'count' => $cat->products_count . ' Items'
                 ];
             });
 
         $products = Product::with('category')
             ->get()
-            ->map(function($p){
+            ->map(function ($p) {
                 return [
                     'id' => $p->id,
                     'name' => $p->name,
-                    'price' => (float)$p->price,
+                    'price' => (float) $p->price,
                     'category' => $p->category->name ?? 'Uncategorized',
-                    'image' => $p->images[0] ?? null ,
+                    'image' => $p->images[0] ?? null
                 ];
             });
 
-        return view('admin.itemMenu.menu', compact('categories','products'));
+        $orders = Order::with('items')->latest()->get();
+
+        return view('admin.itemMenu.menu', compact(
+            'categories',
+            'products',
+            'orders'   // ✅ pass orders to blade
+        ));
     }
-    public function store(Request $request)
+
+    // ==============================
+    // Save Order
+    // ==============================
+    public function storeOrder(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
-            'category_id' => 'required|exists:categories,id',
-            'image' => 'nullable|image|max:2048', // Optional image upload
-        ]);
+        try {
 
-        // Handle image upload if provided
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('public/images');
-            $validated['image'] = basename($path); // Store only the filename
+            DB::beginTransaction();
+
+            // Create Order
+            $order = Order::create([
+                'total_amount' => $request->total,
+                'status' => 'pending'
+            ]);
+
+            // Save Order Items
+            foreach ($request->cart as $item) {
+
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item['id'],
+                    'quantity' => $item['qty'],
+                    'price' => $item['price'],
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Order saved successfully',
+                'order_id' => $order->id
+            ]);
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        Product::create($validated);
-
-        return redirect()->back()->with('success', 'Menu item added successfully!');
     }
+    
 }

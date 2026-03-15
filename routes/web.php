@@ -18,7 +18,7 @@ use App\Http\Controllers\admin\SettingController;
 
 // ================================================================================
 
-// testing for website
+//Show this website first before login
 
 Route::get('/', [UserwebController::class, 'pages'])->name('userweb.index');
 // ================================================================================
@@ -35,9 +35,6 @@ Route::post('/login', [LoginController::class, 'login']);
 // Register
 Route::get('/register', [LoginController::class, 'showRegister'])->name('register');
 Route::post('/register', [LoginController::class, 'register']);
-
-// Logout
-// Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 
 // ================================================================================
@@ -72,6 +69,8 @@ Route::middleware(['auth'])->group(function () {
 
     // --- MENU ---
     Route::get('/menu', [MenuController::class, 'pageMenu'])->name('menu.index');
+    Route::post('/order/store', [MenuController::class,'storeOrder']) ->name('order.store');
+    
 
     // --- RESERVATION / TABLE MANAGEMENT ---
     Route::controller(ReservationController::class)->group(function () {   
@@ -84,15 +83,20 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/reservations/{id}', 'destroy')->name('reservations.destroy');
     });
 
-    // Resource & Search (ដាក់នៅក្រៅ Controller Group ដើម្បីកុំឱ្យជាន់គ្នា)
+    // Resource & Search for Reservation 
     Route::prefix('admin')->group(function () {
         Route::get('reservations/search', [ReservationController::class, 'search'])->name('reservations.search');
-        // បើអ្នកប្រើ resource វានឹងបង្កើត index, create, store... ឱ្យដោយស្វ័យប្រវត្តិ
+        // បើអ្នកប្រើ resource វានឹងបង្កើត index, create, store 
         Route::resource('reservations', ReservationController::class)->except(['index', 'create', 'store', 'destroy']);
     });
 
-        // --- REPORTS & SETTINGS ---
+        // REPORTS AND BACKUP 
+        
         Route::get('/reports', [ReportController::class, 'pageReport'])->name('report.index');
+
+
+        // SETTINGS
         Route::get('/settings', [SettingController::class, 'pageSetting'])->name('setting.index');
+        Route::post('/settings/save', [SettingController::class, 'save'])->name('setting.save');
 
     });

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\admin;
 
+
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; 
 
 class CategoryController extends Controller
 {
@@ -58,17 +60,29 @@ class CategoryController extends Controller
         $category = Category::findOrFail($id);
         return view('admin.itemMenu.addcategory', compact('category'));
     }
-
     // UPDATE
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
         $category = Category::findOrFail($id);
 
         $request->validate([
             'name' => 'required|max:255|unique:categories,name,'.$id,
+            'image' => 'nullable|image|max:2048',
         ]);
 
-        $category->update($request->only('name','description'));
+        $data = $request->only('name','description');
+
+        if ($request->hasFile('image')) {
+            // delete old image if exists
+            if ($category->image && Storage::disk('public')->exists($category->image)) {
+                Storage::disk('public')->delete($category->image);
+            }
+
+            // store new image
+            $data['image'] = $request->file('image')->store('categories', 'public');
+        }
+
+        $category->update($data);
 
         return redirect()->route('allcategory.index')
             ->with('success','Category Updated Successfully!');
@@ -77,9 +91,17 @@ class CategoryController extends Controller
     // DELETE
     public function destroy($id)
     {
-        Category::findOrFail($id)->delete();
+        $category = Category::findOrFail($id);
+
+        // ✅ លុបរូបក្នុង storage
+        if ($category->image && Storage::disk('public')->exists($category->image)) {
+            Storage::disk('public')->delete($category->image);
+        }
+
+        // ✅ លុប record ក្នុង database
+        $category->delete();
 
         return redirect()->route('allcategory.index')
-            ->with('success','Category Deleted!');
+            ->with('success','Category and Image Deleted Successfully!');
     }
 }

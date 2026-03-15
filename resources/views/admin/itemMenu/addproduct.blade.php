@@ -1,90 +1,215 @@
 @vite('resources/css/app.css')
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style> 
-    body { font-family: 'Inter', sans-serif; } 
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+    body { font-family: 'Inter', sans-serif; }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #ffccbc; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #EE6D3C; border-radius: 10px; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
 </style>
 <title>FastBite | Flavor Unleashed</title>
+
 <div class="bg-[#FFE4DB] min-h-screen">
-    <div class="flex flex-col lg:flex-row min-h-screen p-3 sm:p-4 gap-4 sm:gap-6">
-        <aside class="hidden xl:block xl:w-64 flex-shrink-0"> 
+    <div class="flex h-screen p-2 md:p-4 gap-4 md:gap-6 overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside>
             @include('components.asidebar')
         </aside>
 
-        <main class="flex-1 w-full">
+        <main class="flex-1 overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
+
+            <!-- Mobile menu button -->
+            <button class="bg-[#EE6D3C] text-white p-3 rounded-2xl shadow-lg block md:hidden mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                </svg>
+            </button>
+
             <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-4 mb-8">
-                <div class="flex items-center gap-4 mb-6">
-                    <a href="{{ route('allproduct.index') }}" class="bg-[#EE6D3C] text-white p-2 rounded-xl hover:scale-105 transition shadow-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                    </a>
-                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">
+
+                <!-- Header -->
+                <div class="flex items-center gap-3 mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">
                         {{ isset($product) ? 'Edit Product' : 'Create Product' }}
                     </h2>
+                    <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">
+                        {{ isset($product) ? 'Editing' : 'New' }}
+                    </span>
                 </div>
 
-                <form action="{{ isset($product) ? route('product.update', $product->id) : route('addproduct.store') }}" method="POST" enctype="multipart/form-data">
+                <!-- Form -->
+                <form action="{{ isset($product) ? route('product.update', $product->id) : route('addproduct.store') }}"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      x-data="{
+                          previewUrl: '{{ isset($product) && $product->images && is_array($product->images) ? asset('storage/' . $product->images[0]) : '' }}',
+                          handleFile(e) {
+                              const file = e.target.files[0];
+                              if (file) this.previewUrl = URL.createObjectURL(file);
+                          }
+                      }">
                     @csrf
                     @if(isset($product)) @method('PUT') @endif
 
-                    <div class="flex flex-col xl:flex-row gap-8 xl:gap-12">
-                        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="flex flex-col xl:flex-row gap-8">
+
+                        <!-- Left: Fields -->
+                        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                            <!-- Name -->
                             <div class="flex flex-col gap-2">
-                                <label class="font-bold">Name*</label>
-                                <input type="text" name="name" required value="{{ old('name', $product->name ?? '') }}" class="bg-[#E9E9E9] rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-200">
+                                <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Name *</label>
+                                <input type="text" name="name" required
+                                    value="{{ old('name', $product->name ?? '') }}"
+                                    placeholder="Enter product name"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
+                                        @error('name') border-red-400 @enderror">
+                                @error('name')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
                             </div>
+
+                            <!-- Qty -->
                             <div class="flex flex-col gap-2">
-                                <label class="font-bold">Qty*</label>
-                                <input type="number" name="qty" required value="{{ old('qty', $product->qty ?? '') }}" class="bg-[#E9E9E9] rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-200">
+                                <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Qty *</label>
+                                <input type="number" name="qty" required
+                                    value="{{ old('qty', $product->qty ?? '') }}"
+                                    placeholder="0"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
+                                        @error('qty') border-red-400 @enderror">
+                                @error('qty')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
                             </div>
+
+                            <!-- Price -->
                             <div class="flex flex-col gap-2">
-                                <label class="font-bold">Price*</label>
-                                <input type="text" name="price" required value="{{ old('price', $product->price ?? '') }}" class="bg-[#E9E9E9] rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-200">
+                                <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Price *</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">$</span>
+                                    <input type="text" name="price" required
+                                        value="{{ old('price', $product->price ?? '') }}"
+                                        placeholder="0.00"
+                                        class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
+                                            @error('price') border-red-400 @enderror">
+                                </div>
+                                @error('price')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
                             </div>
+
+                            <!-- Cost -->
                             <div class="flex flex-col gap-2">
-                                <label class="font-bold">Cost*</label>
-                                <input type="text" name="cost" required value="{{ old('cost', $product->cost ?? '') }}" class="bg-[#E9E9E9] rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-200">
+                                <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Cost *</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">$</span>
+                                    <input type="text" name="cost" required
+                                        value="{{ old('cost', $product->cost ?? '') }}"
+                                        placeholder="0.00"
+                                        class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
+                                            @error('cost') border-red-400 @enderror">
+                                </div>
+                                @error('cost')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
                             </div>
+
+                            <!-- Category -->
                             <div class="flex flex-col gap-2">
-                                <label class="font-bold">Category*</label>
-                                <select name="category_id" required class="bg-[#E9E9E9] rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-200">
+                                <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Category *</label>
+                                <select name="category_id" required
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-white transition
+                                        @error('category_id') border-red-400 @enderror">
                                     <option value="">Select Category</option>
                                     @foreach($categories as $category)
-                                        <option value="{{ $category->id }}" {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                        <option value="{{ $category->id }}"
+                                            {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
                                     @endforeach
                                 </select>
+                                @error('category_id')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
                             </div>
+
+                            <!-- Count -->
                             <div class="flex flex-col gap-2">
-                                <label class="font-bold">Count*</label>
-                                <input type="number" name="count" required value="{{ old('count', $product->count ?? 0) }}" class="bg-[#E9E9E9] rounded-xl p-3 outline-none focus:ring-2 focus:ring-orange-200">
+                                <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Count *</label>
+                                <input type="number" name="count" required
+                                    value="{{ old('count', $product->count ?? 0) }}"
+                                    placeholder="0"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
+                                        @error('count') border-red-400 @enderror">
+                                @error('count')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
                             </div>
-                            <div class="sm:col-span-2 flex flex-col gap-2 mt-2">
-                                <label class="font-bold">Description</label>
-                                <textarea name="description" rows="5" class="border-2 border-gray-800 rounded-2xl p-4 outline-none focus:ring-2 focus:ring-orange-100">{{ old('description', $product->description ?? '') }}</textarea>
+
+                            <!-- Description -->
+                            <div class="sm:col-span-2 flex flex-col gap-2">
+                                <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Description</label>
+                                <textarea name="description" rows="5"
+                                    placeholder="Enter product description..."
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm resize-none transition">{{ old('description', $product->description ?? '') }}</textarea>
+                            </div>
+
+                        </div>
+
+                        <!-- Right: Image Upload -->
+                        <div class="w-full xl:w-80 flex-shrink-0">
+                            <label class="font-bold text-gray-700 text-sm uppercase tracking-wide block mb-3">Product Image</label>
+
+                            <div class="relative group rounded-xl border-2 border-dashed border-gray-300 hover:border-[#EE6D3C] transition overflow-hidden bg-gray-50 aspect-square flex items-center justify-center cursor-pointer">
+
+                                <!-- Hidden file input -->
+                                <input type="file" name="images" accept="image/*"
+                                    @change="handleFile($event)"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+
+                                <!-- Preview -->
+                                <template x-if="previewUrl">
+                                    <img :src="previewUrl" class="w-full h-full object-cover absolute inset-0">
+                                </template>
+
+                                <!-- Placeholder -->
+                                <template x-if="!previewUrl">
+                                    <div class="text-center p-6 pointer-events-none">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-300 group-hover:text-[#EE6D3C] transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <p class="mt-3 text-sm text-gray-400 group-hover:text-[#EE6D3C] font-medium transition">Click to upload image</p>
+                                        <p class="text-xs text-gray-300 mt-1">PNG, JPG, WEBP</p>
+                                    </div>
+                                </template>
+
+                                <!-- Hover overlay when image exists -->
+                                <template x-if="previewUrl">
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center z-0 pointer-events-none">
+                                        <p class="text-white text-sm font-bold">Change Image</p>
+                                    </div>
+                                </template>
+
                             </div>
                         </div>
 
-                        <div class="w-full xl:w-1/3">
-                            <label class="font-bold block mb-4">Product Images</label>
-                            <div class="relative group aspect-square">
-                                <input type="file" name="images" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                                <div class="bg-[#D9D9D9] rounded-xl w-full h-full flex items-center justify-center border-4 border-dashed border-white overflow-hidden">
-                                    @if(isset($product) && $product->images && is_array($product->images))
-                                        <img src="{{ asset('storage/' . $product->images[0]) }}" class="w-full h-full object-cover">
-                                    @else
-                                        <p class="text-white">Click to upload</p>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
-                    <div class="flex justify-end mt-8">
-                        <button type="submit" 
-                        class="px-8 py-2 bg-[#EE6D3C] text-white font-bold rounded-xl shadow-md hover:scale-105 transition-transform">
+                    <!-- Footer Actions -->
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
+                        <a href="{{ route('allproduct.index') }}"
+                            class="px-6 py-3 border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition text-sm text-center">
+                            Cancel
+                        </a>
+                        <button type="submit"
+                            class="flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-700 text-white font-bold rounded-xl transition text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
                             {{ isset($product) ? 'Update Product' : 'Save Product' }}
                         </button>
                     </div>
+
                 </form>
             </div>
         </main>

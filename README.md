@@ -61,7 +61,6 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 
 ===========================================================================================
-
 ## INSTALL (PHP 8.4 , LARAVEL 12)
 <!-- PHP Last version -->
 composer install
@@ -82,4 +81,3 @@ RUN FOR MAC : npm run dev & php artisan serve
 
 RUN FOR WINDONW : npm run dev , (NEW TERMINAL) : php artisan serve 
 ===========================================================================================
-

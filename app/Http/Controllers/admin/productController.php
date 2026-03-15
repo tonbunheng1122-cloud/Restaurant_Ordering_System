@@ -49,7 +49,7 @@ class ProductController extends Controller
 
         if ($request->hasFile('images')) {
             $path = $request->file('images')->store('products', 'public');
-            $data['images'] = [$path]; // រក្សាទុកជា Array សម្រាប់ JSON Casting
+            $data['images'] = [$path]; // store Array for JSON Casting
         }
 
         Product::create($data);
@@ -80,7 +80,7 @@ class ProductController extends Controller
         $data = $request->only(['name','qty','price','cost','count','description','category_id']);
 
         if ($request->hasFile('images')) {
-            // លុបរូបចាស់
+            // delete old picture
             if ($product->images && is_array($product->images)) {
                 foreach($product->images as $oldImg) {
                     Storage::disk('public')->delete($oldImg);
@@ -92,17 +92,25 @@ class ProductController extends Controller
 
         $product->update($data);
         return redirect()->route('allproduct.index')->with('success', 'Product Updated Successfully!');
-    }
-
+        
+        }
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
+
+        // delete picture in file 
         if ($product->images && is_array($product->images)) {
-            foreach($product->images as $img) {
-                Storage::disk('public')->delete($img);
+            foreach ($product->images as $img) {
+                if (Storage::disk('public')->exists($img)) {
+                    Storage::disk('public')->delete($img);
+                }
             }
         }
+
+        // ✅ delete record in db
         $product->delete();
-        return redirect()->route('allproduct.index')->with('success', 'Product Deleted Successfully!');
+
+        return redirect()->route('allproduct.index')
+            ->with('success', 'Product and Images Deleted Successfully!');
     }
 }
