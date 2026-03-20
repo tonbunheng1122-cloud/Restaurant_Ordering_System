@@ -6,12 +6,11 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #EE6D3C; border-radius: 10px; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
 </style>
-<title>FastBite | Flavor Unleashed</title>
+<title>FastBite | User Management</title>
 
 <div class="bg-[#FFE4DB] min-h-screen" x-data="{ mobileMenuOpen: false }">
     <div class="flex h-screen p-2 md:p-4 gap-4 md:gap-6 overflow-hidden relative">
 
-        <!-- Sidebar -->
         <aside>
             @include('components.asidebar')
         </aside>
@@ -29,25 +28,42 @@
                 </svg>
             </button>
 
+            <!-- Flash Messages -->
+            @if(session('success'))
+            <div x-data="{ show: true }" x-show="show" x-transition
+                class="flex items-center justify-between gap-3 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl mb-4 text-sm font-medium">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    {{ session('success') }}
+                </div>
+                <button @click="show = false" class="text-green-400 hover:text-green-600 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            @endif
+
             <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-4 mb-8">
 
                 <!-- Header -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-
                     <div class="flex items-center gap-3">
-                        <h2 class="text-2xl font-bold text-gray-800">Product List</h2>
+                        <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
                         <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">
-                            Products
+                            {{ $users->total() }} users
                         </span>
                     </div>
 
                     <div class="flex items-center gap-3 flex-wrap">
 
                         <!-- Search -->
-                        <form method="GET" action="{{ route('allproduct.index') }}" class="relative w-full md:w-72">
+                        <form method="GET" action="{{ route('user.index') }}" class="relative w-full md:w-72">
                             <input type="text" name="search"
                                 value="{{ request('search') }}"
-                                placeholder="Search product..."
+                                placeholder="Search users..."
                                 class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
                             <button type="submit" class="absolute right-3 top-3.5 text-gray-400 hover:text-[#EE6D3C] transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -57,12 +73,12 @@
                         </form>
 
                         <!-- Create button -->
-                        <a href="{{ route('addproduct.index') }}"
+                        <a href="{{ route('user.create') }}"
                             class="flex items-center gap-2 bg-gray-900 hover:bg-gray-700 text-white text-sm font-bold px-4 py-3 rounded-xl transition whitespace-nowrap">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
-                            Create New
+                            Add User
                         </a>
 
                     </div>
@@ -74,64 +90,53 @@
 
                         <thead class="bg-gray-50">
                             <tr class="border-b text-gray-600 uppercase text-xs">
-                                <th class="p-4 w-10">
-                                    <input type="checkbox" class="rounded border-gray-300">
-                                </th>
-                                <th class="p-4">Image</th>
-                                <th class="p-4">Name</th>
-                                <th class="p-4 hidden md:table-cell">Category</th>
-                                <th class="p-4">Qty</th>
-                                <th class="p-4">Price</th>
+                                <th class="p-4">ID</th>
+                                <th class="p-4">Username</th>
+                                <th class="p-4 hidden md:table-cell">Role</th>
+                                <th class="p-4 hidden md:table-cell">Created At</th>
                                 <th class="p-4 text-center">Action</th>
                             </tr>
                         </thead>
 
                         <tbody class="divide-y">
-                            @forelse($products as $product)
+                            @forelse($users as $user)
                             <tr class="hover:bg-orange-50/50 transition">
 
-                                <!-- Checkbox -->
+                                <!-- ID -->
+                                <td class="p-4 font-medium text-gray-700">#{{ $user->id }}</td>
+
+                                <!-- Username + Avatar -->
                                 <td class="p-4">
-                                    <input type="checkbox" class="rounded border-gray-300">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-[#FFE4DB] text-[#EE6D3C] font-black text-sm flex items-center justify-center flex-shrink-0">
+                                            {{ strtoupper(substr($user->username, 0, 1)) }}
+                                        </div>
+                                        <span class="font-semibold text-gray-800">{{ $user->username }}</span>
+                                    </div>
                                 </td>
 
-                                <!-- Image -->
-                                <td class="p-4">
-                                    @php
-                                        $imagePath = 'https://via.placeholder.com/80';
-                                        if ($product->images) {
-                                            if (is_array($product->images) && count($product->images) > 0) {
-                                                $imagePath = asset('storage/' . $product->images[0]);
-                                            } elseif (is_string($product->images)) {
-                                                $imagePath = asset('storage/' . $product->images);
-                                            }
-                                        }
-                                    @endphp
-                                    <img src="{{ $imagePath }}"
-                                        alt="{{ $product->name }}"
-                                        class="w-12 h-12 rounded-xl object-cover border border-gray-100 shadow-sm">
-                                </td>
-
-                                <!-- Name -->
-                                <td class="p-4 font-semibold text-gray-800">
-                                    {{ $product->name }}
-                                </td>
-
-                                <!-- Category -->
+                                <!-- Role -->
                                 <td class="p-4 hidden md:table-cell">
-                                    <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">
-                                        {{ $product->category->name ?? 'N/A' }}
+                                    @php
+                                        $roleColors = [
+                                            'Admin' => 'bg-purple-100 text-purple-700',
+                                            'User'  => 'bg-blue-100 text-blue-700',
+                                        ];
+                                        $roleColor = $roleColors[$user->role] ?? 'bg-gray-100 text-gray-600';
+                                    @endphp
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $roleColor }}">
+                                        {{ $user->role ?? 'User' }}
                                     </span>
                                 </td>
 
-                                <!-- Qty -->
-                                <td class="p-4 text-gray-600">
-                                    {{ $product->qty }}
-                                </td>
-
-                                <!-- Price -->
-                                <td class="p-4 font-bold text-[#EE6D3C]">
-                                    ${{ number_format($product->price, 2) }}
+                                <!-- Created At -->
+                                <td class="p-4 hidden md:table-cell">
+                                    <span class="block text-gray-700 text-xs font-medium">
+                                        {{ \Carbon\Carbon::parse($user->created_at)->format('d M Y') }}
+                                    </span>
+                                    <span class="text-gray-400 text-xs">
+                                        {{ \Carbon\Carbon::parse($user->created_at)->format('h:i A') }}
+                                    </span>
                                 </td>
 
                                 <!-- Actions -->
@@ -139,7 +144,7 @@
                                     <div class="flex justify-center items-center gap-2">
 
                                         <!-- Edit -->
-                                        <a href="{{ route('product.edit', $product->id) }}"
+                                        <a href="{{ route('user.edit', $user->id) }}"
                                             class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-800 hover:text-white hover:border-gray-800 transition"
                                             title="Edit">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,9 +153,8 @@
                                         </a>
 
                                         <!-- Delete -->
-                                        <form action="{{ route('product.destroy', $product->id) }}"
-                                              method="POST"
-                                              onsubmit="return confirm('Are you sure you want to delete this product?')">
+                                        <form action="{{ route('user.destroy', $user->id) }}" method="POST"
+                                              onsubmit="return confirm('Delete user {{ $user->username }}?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -168,9 +172,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="7" class="p-10 text-center text-gray-400 italic">
-                                    No products found.
-                                </td>
+                                <td colspan="5" class="p-10 text-center text-gray-400 italic">No users found.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -180,7 +182,7 @@
 
                 <!-- Pagination -->
                 <div class="mt-6">
-                    {{ $products->links() }}
+                    {{ $users->links() }}
                 </div>
 
             </div>

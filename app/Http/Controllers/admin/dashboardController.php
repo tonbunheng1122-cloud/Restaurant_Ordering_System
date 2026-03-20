@@ -18,6 +18,7 @@ class DashboardController extends Controller
         $totalCategories = Category::count();
         $totalTables     = Reservation::select('table_id')->distinct()->count('table_id');
         $totalUsers      = DB::table('logins')->count();
+        $totalRevenue    = Order::sum('total_amount');
 
         $recentProducts  = Product::with('category')->latest()->take(5)->get();
 
@@ -36,6 +37,7 @@ class DashboardController extends Controller
             'totalCategories',
             'totalTables',
             'totalUsers',
+            'totalRevenue',
             'recentProducts',
             'salesLabels',
             'salesValues'

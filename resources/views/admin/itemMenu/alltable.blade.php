@@ -1,10 +1,11 @@
 @vite('resources/css/app.css')
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <style>
     body { font-family: 'Inter', sans-serif; }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #EE6D3C; border-radius: 10px; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
+    .main-container { height: 100vh; overflow: hidden; }
 </style>
 <title>FastBite | Flavor Unleashed</title>
 

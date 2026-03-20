@@ -4,8 +4,8 @@
     use Illuminate\Http\Request;
     class UserwebController extends Controller
     {
-public function pages() {
-    return view('layouts.userweb'); // ត្រូវប្រាកដថា file មាន
-}
+    public function pages() {
+        return view('layouts.userweb'); 
     }
+        }
 ?>

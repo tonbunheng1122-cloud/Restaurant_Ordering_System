@@ -1,5 +1,5 @@
 @vite('resources/css/app.css')
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <style>
     body { font-family: 'Inter', sans-serif; }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
@@ -122,7 +122,7 @@
                         </div>
 
                         <!-- Right: Table Picker -->
-                        <div class="w-full lg:flex-1 bg-gray-50 border border-gray-100 rounded-2xl p-6 sm:p-8">
+                        <div class="w-full lg:flex-1 bg-gray-100 border border-gray-100 rounded-2xl p-6 sm:p-8">
                             <div class="flex items-center gap-3 mb-8">
                                 <h3 class="font-bold text-gray-700 text-sm uppercase tracking-wide">Select Table</h3>
                                 <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">9 Tables</span>

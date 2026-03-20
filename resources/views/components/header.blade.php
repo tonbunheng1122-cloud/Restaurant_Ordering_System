@@ -1,3 +1,5 @@
+@vite('resources/css/app.css')
+@vite(['resources/css/app.css', 'resources/js/app.js'])
     <style> body { font-family: 'Inter', sans-serif; } </style>
     <header class="flex items-center justify-between mb-8">
                 <div class="flex flex-1 max-w-2xl gap-2">

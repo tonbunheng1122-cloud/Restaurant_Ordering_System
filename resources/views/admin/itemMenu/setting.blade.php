@@ -1,5 +1,5 @@
 @vite('resources/css/app.css')
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <style>
     body { font-family: 'Inter', sans-serif; }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
@@ -8,7 +8,7 @@
 </style>
 <title>FastBite | Settings</title>
 
-<div class="bg-[#FFE4DB] min-h-screen" x-data="{ mobileMenuOpen: false, tab: '{{ old('_tab', 'general') }}' }">
+<div class="bg-[#FFE4DB] min-h-screen" x-data="{ mobileMenuOpen: false }">
     <div class="flex h-screen p-2 md:p-4 gap-4 md:gap-6 overflow-hidden relative">
 
         <aside>
@@ -27,7 +27,7 @@
                 </svg>
             </button>
 
-            {{-- Success Flash --}}
+            {{-- Flash --}}
             @if(session('success'))
             <div x-data="{ show: true }" x-show="show" x-transition
                 class="flex items-center justify-between gap-3 bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl mb-4 text-sm font-medium">
@@ -45,178 +45,221 @@
             </div>
             @endif
 
-            <form action="{{ route('setting.save') }}" method="POST">
+            <form action="{{ route('setting.save') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                {{-- Remembers which tab was active when form was submitted --}}
-                <input type="hidden" name="_tab" :value="tab">
 
-                <div class="bg-white rounded-lg shadow-sm border border-orange-100 mt-4 mb-8 overflow-hidden">
+                <div class="bg-white rounded-lg shadow-sm border border-orange-100 mt-4 mb-6 overflow-hidden">
 
                     {{-- Header --}}
                     <div class="p-6 md:p-8 border-b border-gray-100">
                         <div class="flex items-center gap-3">
                             <h2 class="text-2xl font-bold text-gray-800">System Settings</h2>
-                            <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">
-                                Configuration
-                            </span>
+                            <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">Configuration</span>
                         </div>
-                        <p class="text-gray-500 text-sm mt-1">Manage your restaurant configuration and preferences.</p>
+                        <p class="text-gray-500 text-sm mt-1">Changes here reflect live on the public website.</p>
                     </div>
 
-                    <div class="grid grid-cols-12">
+                    <div class="p-6 md:p-8 space-y-10">
 
-                        {{-- Tab Nav --}}
-                        <div class="col-span-12 md:col-span-3 bg-gray-50/50 p-4 border-r border-gray-100">
-                            <nav class="flex md:flex-col gap-2 overflow-x-auto no-scrollbar">
+                        {{-- ===== SECTION: BRAND ===== --}}
+                        <div>
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
+                                <h3 class="text-base font-bold text-gray-800 uppercase tracking-wide">Brand</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                                @php
-                                $tabs = [
-                                    ['key' => 'general',  'label' => 'General',  'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z'],
-                                    ['key' => 'users',    'label' => 'Users',    'icon' => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'],
-                                    ['key' => 'printers', 'label' => 'Printers', 'icon' => 'M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z'],
-                                ];
-                                @endphp
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Restaurant Name</label>
+                                    <input type="text" name="restaurant_name"
+                                        value="{{ old('restaurant_name', $settings['restaurant_name']) }}"
+                                        placeholder="e.g. FastBite"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
+                                </div>
 
-                                @foreach($tabs as $item)
-                                <button type="button" @click="tab = '{{ $item['key'] }}'"
-                                    :class="tab === '{{ $item['key'] }}'
-                                        ? 'bg-[#EE6D3C] text-white shadow-md shadow-orange-200'
-                                        : 'text-gray-600 hover:bg-orange-50 hover:text-[#EE6D3C]'"
-                                    class="whitespace-nowrap flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 text-left">
-                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
-                                    </svg>
-                                    {{ $item['label'] }}
-                                </button>
-                                @endforeach
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Logo Text</label>
+                                    <input type="text" name="logo_text"
+                                        value="{{ old('logo_text', $settings['logo_text']) }}"
+                                        placeholder="e.g. FastBite"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
+                                </div>
 
-                            </nav>
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Tagline (Hero Title)</label>
+                                    <input type="text" name="tagline"
+                                        value="{{ old('tagline', $settings['tagline']) }}"
+                                        placeholder="e.g. Flavor Unleashed."
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
+                                </div>
+
+                                <div class="flex flex-col gap-2 md:col-span-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Hero Description</label>
+                                    <textarea name="description" rows="3"
+                                        placeholder="Short description shown in the hero section..."
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm resize-none transition">{{ old('description', $settings['description']) }}</textarea>
+                                </div>
+
+                            </div>
                         </div>
 
-                        {{-- Tab Content --}}
-                        <div class="col-span-12 md:col-span-9 p-6 md:p-8 min-h-[500px]">
-
-                            {{-- General --}}
-                            <div x-show="tab === 'general'" x-transition>
-                                <div class="flex items-center gap-2 mb-6">
-                                    <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
-                                    <h3 class="text-lg font-bold text-gray-800">General Information</h3>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Restaurant Name</label>
-                                        <input type="text" name="restaurant_name"
-                                            value="{{ old('restaurant_name') }}"
-                                            placeholder="e.g. FastBite"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition @error('restaurant_name') border-red-400 @enderror">
-                                        @error('restaurant_name')
-                                            <span class="text-red-500 text-xs">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Phone Number</label>
-                                        <input type="text" name="phone"
-                                            value="{{ old('phone') }}"
-                                            placeholder="+855..."
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition @error('phone') border-red-400 @enderror">
-                                        @error('phone')
-                                            <span class="text-red-500 text-xs">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
-                                    <div class="flex flex-col gap-2 md:col-span-2">
-                                        <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Email Address</label>
-                                        <input type="email" name="email"
-                                            value="{{ old('email') }}"
-                                            placeholder="contact@restaurant.com"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition @error('email') border-red-400 @enderror">
-                                        @error('email')
-                                            <span class="text-red-500 text-xs">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
-                                    <div class="flex flex-col gap-2 md:col-span-2">
-                                        <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Address</label>
-                                        <textarea name="address" rows="3"
-                                            placeholder="Enter restaurant address..."
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm resize-none transition">{{ old('address') }}</textarea>
-                                    </div>
-
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Currency</label>
-                                        <select name="currency"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-white transition">
-                                            <option value="USD" {{ old('currency', 'USD') === 'USD' ? 'selected' : '' }}>USD ($)</option>
-                                            <option value="KHR" {{ old('currency') === 'KHR' ? 'selected' : '' }}>KHR (៛)</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Timezone</label>
-                                        <select name="timezone"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-white transition">
-                                            <option value="Asia/Phnom_Penh" {{ old('timezone', 'Asia/Phnom_Penh') === 'Asia/Phnom_Penh' ? 'selected' : '' }}>Asia/Phnom_Penh (UTC+7)</option>
-                                            <option value="Asia/Bangkok"    {{ old('timezone') === 'Asia/Bangkok'    ? 'selected' : '' }}>Asia/Bangkok (UTC+7)</option>
-                                            <option value="UTC"             {{ old('timezone') === 'UTC'             ? 'selected' : '' }}>UTC</option>
-                                        </select>
-                                    </div>
-
-                                </div>
+                        {{-- ===== SECTION: HERO IMAGE ===== --}}
+                        <div x-data="{
+                            previewUrl: '{{ $settings['hero_image'] ? asset('storage/'.$settings['hero_image']) : '' }}',
+                            handleFile(e) {
+                                const file = e.target.files[0];
+                                if (file) this.previewUrl = URL.createObjectURL(file);
+                            }
+                        }">
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
+                                <h3 class="text-base font-bold text-gray-800 uppercase tracking-wide">Hero Image</h3>
                             </div>
 
-                            {{-- Users --}}
-                            <div x-show="tab === 'users'" x-transition>
-                                <div class="flex items-center gap-2 mb-6">
-                                    <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
-                                    <h3 class="text-lg font-bold text-gray-800">User Management</h3>
+                            <div class="flex flex-col md:flex-row gap-6 items-start">
+                                {{-- Upload box --}}
+                                <div class="relative group w-full md:w-72 h-48 rounded-xl border-2 border-dashed border-gray-300 hover:border-[#EE6D3C] transition overflow-hidden bg-gray-50 flex items-center justify-center cursor-pointer flex-shrink-0">
+                                    <input type="file" name="hero_image" accept="image/*"
+                                        @change="handleFile($event)"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+
+                                    <template x-if="previewUrl">
+                                        <img :src="previewUrl" class="w-full h-full object-cover absolute inset-0">
+                                    </template>
+                                    <template x-if="!previewUrl">
+                                        <div class="text-center p-4 pointer-events-none">
+                                            <svg class="w-10 h-10 mx-auto text-gray-300 group-hover:text-[#EE6D3C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            <p class="mt-2 text-sm text-gray-400 group-hover:text-[#EE6D3C] font-medium transition">Click to upload</p>
+                                            <p class="text-xs text-gray-300 mt-1">PNG, JPG, WEBP — max 2MB</p>
+                                        </div>
+                                    </template>
+                                    <template x-if="previewUrl">
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center z-0 pointer-events-none">
+                                            <p class="text-white text-sm font-bold">Change Image</p>
+                                        </div>
+                                    </template>
                                 </div>
-                                <div class="p-6 bg-orange-50 border border-orange-100 rounded-xl text-center">
-                                    <svg class="w-10 h-10 mx-auto text-orange-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                    </svg>
-                                    <p class="text-sm text-orange-700 font-medium">User management content goes here.</p>
+
+                                <div class="flex flex-col gap-3">
+                                    <p class="text-sm text-gray-500">This image appears in the hero section of the public website. Recommended size: <strong>800×600px</strong>.</p>
+                                    @if($settings['hero_image'])
+                                    <button type="button"
+                                        onclick="document.getElementById('delete-image-form').submit()"
+                                        class="flex items-center gap-2 px-4 py-2 border border-red-300 text-red-500 hover:bg-red-50 rounded-xl text-sm font-semibold transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        Remove Image
+                                    </button>
+                                    @endif
                                 </div>
                             </div>
-
-                            {{-- Printers --}}
-                            <div x-show="tab === 'printers'" x-transition>
-                                <div class="flex items-center gap-2 mb-6">
-                                    <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
-                                    <h3 class="text-lg font-bold text-gray-800">Hardware Configuration</h3>
-                                </div>
-                                <div class="flex items-start gap-3 p-4 bg-orange-50 border border-orange-100 rounded-xl mb-6">
-                                    <svg class="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    <p class="text-sm text-orange-800 font-medium">Connect your thermal printers via IP address or USB.</p>
-                                </div>
-                                <div class="flex flex-col gap-5 max-w-md">
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Kitchen Printer IP</label>
-                                        <input type="text" name="kitchen_printer"
-                                            value="{{ old('kitchen_printer') }}"
-                                            placeholder="192.168.1.100"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition @error('kitchen_printer') border-red-400 @enderror">
-                                        @error('kitchen_printer')
-                                            <span class="text-red-500 text-xs">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                    <div class="flex flex-col gap-2">
-                                        <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Receipt Printer IP</label>
-                                        <input type="text" name="receipt_printer"
-                                            value="{{ old('receipt_printer') }}"
-                                            placeholder="192.168.1.101"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition @error('receipt_printer') border-red-400 @enderror">
-                                        @error('receipt_printer')
-                                            <span class="text-red-500 text-xs">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
+
+                        {{-- ===== SECTION: STATS ===== --}}
+                        <div>
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
+                                <h3 class="text-base font-bold text-gray-800 uppercase tracking-wide">Stats (shown on homepage)</h3>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Happy Customers</label>
+                                    <input type="text" name="happy_customers"
+                                        value="{{ old('happy_customers', $settings['happy_customers']) }}"
+                                        placeholder="10K+"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Total Dishes</label>
+                                    <input type="text" name="total_dishes"
+                                        value="{{ old('total_dishes', $settings['total_dishes']) }}"
+                                        placeholder="200+"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Rating</label>
+                                    <input type="text" name="rating"
+                                        value="{{ old('rating', $settings['rating']) }}"
+                                        placeholder="4.9★"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Delivery Time (min)</label>
+                                    <input type="text" name="delivery_time"
+                                        value="{{ old('delivery_time', $settings['delivery_time']) }}"
+                                        placeholder="30"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- ===== SECTION: CONTACT ===== --}}
+                        <div>
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
+                                <h3 class="text-base font-bold text-gray-800 uppercase tracking-wide">Contact & Location</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Phone Number</label>
+                                    <input type="text" name="phone"
+                                        value="{{ old('phone', $settings['phone']) }}"
+                                        placeholder="+855..."
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Email Address</label>
+                                    <input type="email" name="email"
+                                        value="{{ old('email', $settings['email']) }}"
+                                        placeholder="contact@restaurant.com"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
+                                </div>
+
+                                <div class="flex flex-col gap-2 md:col-span-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Address</label>
+                                    <textarea name="address" rows="2"
+                                        placeholder="Enter restaurant address..."
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm resize-none transition">{{ old('address', $settings['address']) }}</textarea>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {{-- ===== SECTION: SYSTEM ===== --}}
+                        <div>
+                            <div class="flex items-center gap-2 mb-5">
+                                <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
+                                <h3 class="text-base font-bold text-gray-800 uppercase tracking-wide">System</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Currency</label>
+                                    <select name="currency"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-white transition">
+                                        <option value="USD" {{ old('currency', $settings['currency']) === 'USD' ? 'selected' : '' }}>USD ($)</option>
+                                        <option value="KHR" {{ old('currency', $settings['currency']) === 'KHR' ? 'selected' : '' }}>KHR (៛)</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex flex-col gap-2">
+                                    <label class="font-bold text-gray-700 text-xs uppercase tracking-wide">Timezone</label>
+                                    <select name="timezone"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-white transition">
+                                        <option value="Asia/Phnom_Penh" {{ old('timezone', $settings['timezone']) === 'Asia/Phnom_Penh' ? 'selected' : '' }}>Asia/Phnom_Penh (UTC+7)</option>
+                                        <option value="Asia/Bangkok"    {{ old('timezone', $settings['timezone']) === 'Asia/Bangkok'    ? 'selected' : '' }}>Asia/Bangkok (UTC+7)</option>
+                                        <option value="UTC"             {{ old('timezone', $settings['timezone']) === 'UTC'             ? 'selected' : '' }}>UTC</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+
                     </div>
 
                     {{-- Footer --}}
@@ -236,6 +279,12 @@
 
                 </div>
             </form>
+
+            {{-- Standalone delete image form (outside main form to avoid nesting) --}}
+            <form id="delete-image-form" action="{{ route('setting.deleteImage') }}" method="POST" class="hidden">
+                @csrf
+            </form>
+
         </main>
     </div>
 </div>

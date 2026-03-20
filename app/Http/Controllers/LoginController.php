@@ -43,7 +43,7 @@ class LoginController extends Controller
         Logins::create([
             'username' => $request->username,
             'password' => Hash::make($request->password),
-            'role'     => $request->role ?? 'User', // Uses hidden input from form
+            'role'     => $request->role ?? 'admin', // Uses hidden input from form
         ]);
 
         return redirect()->route('login')->with('success', 'Account created successfully! Please login.');

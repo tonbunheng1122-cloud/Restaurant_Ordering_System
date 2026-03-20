@@ -10,93 +10,101 @@ use App\Http\Controllers\admin\MenuController;
 use App\Http\Controllers\admin\ReservationController;
 use App\Http\Controllers\admin\ReportController;
 use App\Http\Controllers\admin\SettingController;
-
-
-
-// ================================================================================
-// --- AUTHENTICATION ROUTES (Login/Register/Logout) ---
+use App\Http\Controllers\admin\LogoutController;
+use App\Http\Controllers\admin\UserController;
 
 // ================================================================================
+// PUBLIC ROUTES
+// ================================================================================
 
-//Show this website first before login
-
+// Landing page
 Route::get('/', [UserwebController::class, 'pages'])->name('userweb.index');
-// ================================================================================
 
-// Redirect root to login
-//Route::get('/', function () {
-//    return redirect()->route('login');
-//});
-
-// Login
-Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-
-// Register
-Route::get('/register', [LoginController::class, 'showRegister'])->name('register');
+// Auth
+Route::get('/login',     [LoginController::class, 'showLogin'])->name('login');
+Route::post('/login',    [LoginController::class, 'login']);
+Route::get('/register',  [LoginController::class, 'showRegister'])->name('register');
 Route::post('/register', [LoginController::class, 'register']);
-
+Route::post('/logout',   [LogoutController::class, 'logout'])->name('logout');
 
 // ================================================================================
-// --- ADMIN ROUTES (Protected by Auth middleware) ---
+// PROTECTED ROUTES — all logged-in users
 // ================================================================================
 
 Route::middleware(['auth'])->group(function () {
 
-    // --- DASHBOARD ---
+    // Dashboard
     Route::get('/dashboards', [DashboardController::class, 'pageDashboard'])->name('dashboard.index');
 
-    // --- PRODUCT MANAGEMENT ---
+    // Products
     Route::controller(ProductController::class)->group(function () {
-        Route::get('/allproducts', 'index')->name('allproduct.index');
-        Route::get('/addproducts', 'create')->name('addproduct.index');
-        Route::post('/addproducts/store', 'store')->name('addproduct.store');
-        Route::get('/products/edit/{id}', 'edit')->name('product.edit');
-        Route::put('/products/update/{id}', 'update')->name('product.update');
-        Route::delete('/products/delete/{id}', 'destroy')->name('product.destroy');
-        Route::get('/products/{id}', 'show')->name('product.show');
+        Route::get('/allproducts',            'index') ->name('allproduct.index');
+        Route::get('/addproducts',            'create')->name('addproduct.index');
+        Route::post('/addproducts/store',     'store') ->name('addproduct.store');
+        Route::get('/products/edit/{id}',     'edit')  ->name('product.edit');
+        Route::put('/products/update/{id}',   'update')->name('product.update');
+        Route::delete('/products/delete/{id}','destroy')->name('product.destroy');
+        Route::get('/products/{id}',          'show')  ->name('product.show');
     });
 
-    // --- CATEGORY MANAGEMENT ---
+    // Categories
     Route::controller(CategoryController::class)->group(function () {
-        Route::get('/allcategories', 'pageAllcategory')->name('allcategory.index');
-        Route::get('/addcategories', 'pageAddcategory')->name('addcategory.index');
-        Route::post('/addcategories/store', 'store')->name('addcategory.store');
-        Route::get('/categories/edit/{id}', 'edit')->name('category.edit');
-        Route::put('/categories/update/{id}', 'update')->name('category.update');
-        Route::delete('/categories/delete/{id}', 'destroy')->name('category.destroy');
+        Route::get('/allcategories',              'pageAllcategory')->name('allcategory.index');
+        Route::get('/addcategories',              'pageAddcategory')->name('addcategory.index');
+        Route::post('/addcategories/store',       'store')          ->name('addcategory.store');
+        Route::get('/categories/edit/{id}',       'edit')           ->name('category.edit');
+        Route::put('/categories/update/{id}',     'update')         ->name('category.update');
+        Route::delete('/categories/delete/{id}',  'destroy')        ->name('category.destroy');
     });
 
-    // --- MENU ---
-    Route::get('/menu', [MenuController::class, 'pageMenu'])->name('menu.index');
-    Route::post('/order/store', [MenuController::class,'storeOrder']) ->name('order.store');
-    
+    // Menu & Orders
+    Route::get('/menu',         [MenuController::class, 'pageMenu'])   ->name('menu.index');
+    Route::post('/order/store', [MenuController::class, 'storeOrder']) ->name('order.store');
 
-    // --- RESERVATION / TABLE MANAGEMENT ---
-    Route::controller(ReservationController::class)->group(function () {   
-        // បង្កើត Route ឱ្យចំឈ្មោះដែល Laravel កំពុងទាមទារ (reservations.index)
-        Route::get('/alltables', 'index')->name('alltable.index'); // សម្រាប់ link ក្នុង menu
-        Route::get('/reservations', 'index')->name('reservations.index'); // បន្ថែមនេះដើម្បីបំបាត់ Error
-        
-        Route::get('/addtables', 'create')->name('addtable.index');
-        Route::post('/reservations', 'store')->name('reservations.store');
-        Route::delete('/reservations/{id}', 'destroy')->name('reservations.destroy');
+    // Reservations / Tables
+    Route::controller(ReservationController::class)->group(function () {
+        Route::get('/alltables',    'index') ->name('alltable.index');
+        Route::get('/reservations', 'index') ->name('reservations.index');
+        Route::get('/addtables',    'create')->name('addtable.index');
+        Route::post('/reservations',         'store')  ->name('reservations.store');
+        Route::delete('/reservations/{id}',  'destroy')->name('reservations.destroy');
     });
 
-    // Resource & Search for Reservation 
     Route::prefix('admin')->group(function () {
         Route::get('reservations/search', [ReservationController::class, 'search'])->name('reservations.search');
-        // បើអ្នកប្រើ resource វានឹងបង្កើត index, create, store 
-        Route::resource('reservations', ReservationController::class)->except(['index', 'create', 'store', 'destroy']);
+        Route::resource('reservations', ReservationController::class)
+            ->except(['index', 'create', 'store', 'destroy']);
     });
 
-        // REPORTS AND BACKUP 
-        
-        Route::get('/reports', [ReportController::class, 'pageReport'])->name('report.index');
+    // Reports
+    Route::get('/reports',                [ReportController::class, 'pageReport'])  ->name('report.index');
+    Route::get('/reports/export/excel',   [ReportController::class, 'exportExcel']) ->name('report.excel');
+    Route::get('/reports/export/pdf',     [ReportController::class, 'exportPdf'])   ->name('report.pdf');
 
+    // Settings
+    Route::get('/settings',         [SettingController::class, 'pageSetting'])  ->name('setting.index');
+    Route::post('/settings/save',   [SettingController::class, 'save'])         ->name('setting.save');
+    Route::post('/settings/image',  [SettingController::class, 'deleteImage'])  ->name('setting.deleteImage');
 
-        // SETTINGS
-        Route::get('/settings', [SettingController::class, 'pageSetting'])->name('setting.index');
-        Route::post('/settings/save', [SettingController::class, 'save'])->name('setting.save');
+    // Website content CRUD
+    Route::post('/setting/dish',              [SettingController::class, 'storeDish'])   ->name('setting.dish.store');
+    Route::post('/setting/dish/{id}/update',  [SettingController::class, 'updateDish'])  ->name('setting.dish.update');
+    Route::post('/setting/dish/{id}/delete',  [SettingController::class, 'destroyDish']) ->name('setting.dish.destroy');
+    Route::post('/setting/ticker',            [SettingController::class, 'storeTicker']) ->name('setting.ticker.store');
+    Route::post('/setting/ticker/{id}/delete',[SettingController::class, 'destroyTicker'])->name('setting.ticker.destroy');
+    Route::post('/setting/feature',           [SettingController::class, 'saveFeature']) ->name('setting.feature.save');
 
+    // ============================================================================
+    // ADMIN-ONLY ROUTES — role:Admin middleware
+    // ============================================================================
+
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/users',           [UserController::class, 'index'])  ->name('user.index');
+        Route::get('/users/create',    [UserController::class, 'create']) ->name('user.create');
+        Route::post('/users',          [UserController::class, 'store'])  ->name('user.store');
+        Route::get('/users/{id}/edit', [UserController::class, 'edit'])   ->name('user.edit');
+        Route::put('/users/{id}',      [UserController::class, 'update']) ->name('user.update');
+        Route::delete('/users/{id}',   [UserController::class, 'destroy'])->name('user.destroy');
     });
+
+});
