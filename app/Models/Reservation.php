@@ -18,9 +18,4 @@ class Reservation extends Model
         'time',
         'table_id',
     ];
-    public function down(): void
-    {
-        
-        Schema::dropIfExists('reservations');
-    }
 }
