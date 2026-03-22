@@ -125,71 +125,76 @@ class MenuController extends Controller
     // ── UPDATE STATUS + TELEGRAM ───────────────────────────────────────────────
     public function updateStatus(Request $request, $id)
     {
-        $request->validate([
-            'status' => 'required|in:pending,confirmed,processing,completed,cancelled',
-        ]);
+        try {
+            $request->validate([
+                'status' => 'required|in:pending,confirmed,processing,completed,cancelled',
+            ]);
 
-        $order = Order::findOrFail($id);
-        $old   = $order->status;
-        $order->update(['status' => $request->status]);
+            $order = Order::findOrFail($id);
+            $old   = $order->status;
+            $order->update(['status' => $request->status]);
 
-        // ── Telegram: Status changed notification ──
-        $emoji = match ($request->status) {
-            'confirmed'  => '🔵',
-            'processing' => '🟣',
-            'completed'  => '🟢',
-            'cancelled'  => '🔴',
-            default      => '🟡',
-        };
+            // ── Telegram: Status changed notification ──
+            $emoji = match ($request->status) {
+                'confirmed'  => '🔵',
+                'processing' => '🟣',
+                'completed'  => '🟢',
+                'cancelled'  => '🔴',
+                default      => '🟡',
+            };
 
-        $this->sendTelegram(implode("\n", [
-            "{$emoji} *Order Status Updated — FastBite*",
-            "━━━━━━━━━━━━━━━━━━━━",
-            "*Order ID:* #" . $order->id,
-            "*Previous:* " . ucfirst($old),
-            "*New Status:* " . ucfirst($request->status),
-            "━━━━━━━━━━━━━━━━━━━━",
-            "_Updated by admin._",
-        ]));
+            $this->sendTelegram(implode("\n", [
+                "{$emoji} *Order Status Updated — FastBite*",
+                "━━━━━━━━━━━━━━━━━━━━",
+                "*Order ID:* #" . $order->id,
+                "*Previous:* " . ucfirst($old),
+                "*New Status:* " . ucfirst($request->status),
+                "━━━━━━━━━━━━━━━━━━━━",
+                "_Updated by admin._",
+            ]));
 
-        if ($request->expectsJson()) {
-            return response()->json(['message' => 'Status updated', 'status' => $order->status]);
+            return response()->json([
+                'message' => 'Status updated',
+                'status'  => $order->status,
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Invalid status value.'], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        return back()->with('success', 'Order #' . $id . ' updated to ' . ucfirst($request->status));
     }
 
-    // ── DELETE ORDER + TELEGRAM ───────────────────────────────────────────────────
+    // ── DELETE ORDER + TELEGRAM ────────────────────────────────────────────────
     public function destroyOrder($id)
     {
-        $order = Order::with('items')->findOrFail($id);
+        try {
+            $order = Order::with('items')->findOrFail($id);
 
-        // Capture before deleting
-        $itemLines = $order->items->map(fn($i) => "• {$i->name} x{$i->quantity}")->toArray();
-        $total     = $order->total_amount;
-        $status    = $order->status;
+            $itemLines = $order->items->map(fn($i) => "• {$i->name} x{$i->quantity}")->toArray();
+            $total     = $order->total_amount;
+            $status    = $order->status;
 
-        $order->items()->delete();
-        $order->delete();
+            $order->items()->delete();
+            $order->delete();
 
-        // Telegram: Order deleted
-        $this->sendTelegram(implode("\n", [
-            "🗑 *Order Deleted — FastBite*",
-            "━━━━━━━━━━━━━━━━━━━━",
-            "*Order ID:* #" . $id,
-            "*Was Status:* " . ucfirst($status),
-            "*Items:*",
-            implode("\n", $itemLines ?: ["• (no items)"]),
-            "━━━━━━━━━━━━━━━━━━━━",
-            "*Total was: \$" . number_format($total, 2) . "*",
-            "_Deleted by admin._",
-        ]));
+            $this->sendTelegram(implode("\n", [
+                "🗑 *Order Deleted — FastBite*",
+                "━━━━━━━━━━━━━━━━━━━━",
+                "*Order ID:* #" . $id,
+                "*Was Status:* " . ucfirst($status),
+                "*Items:*",
+                implode("\n", $itemLines ?: ["• (no items)"]),
+                "━━━━━━━━━━━━━━━━━━━━",
+                "*Total was: \$" . number_format($total, 2) . "*",
+                "_Deleted by admin._",
+            ]));
 
-        if (request()->expectsJson()) {
             return response()->json(['message' => 'Order deleted']);
-        }
 
-        return back()->with('success', 'Order #' . $id . ' deleted.');
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     // ── TELEGRAM: STOCK ALERT ──────────────────────────────────────────────────

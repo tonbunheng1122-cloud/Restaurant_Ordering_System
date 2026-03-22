@@ -81,3 +81,5 @@ RUN FOR MAC : npm run dev & php artisan serve
 
 RUN FOR WINDONW : npm run dev , (NEW TERMINAL) : php artisan serve 
 ===========================================================================================
+
+#When delete default admin run the command this // php artisan db:seed --class=AdminSeeder

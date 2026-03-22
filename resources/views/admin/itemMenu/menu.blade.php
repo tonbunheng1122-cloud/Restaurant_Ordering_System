@@ -23,9 +23,13 @@ $ordersJson = $orders->map(function($o) {
         'total_amount' => $o->total_amount,
         'created_at'   => $o->created_at->format('d M Y'),
         'time'         => $o->created_at->format('h:i A'),
-        'items'        => $o->items->map(function($i) {
-            return ['name' => $i->name, 'quantity' => $i->quantity];
-        })->values(),
+        'items'        => $o->items->map(function($i, $idx) {
+            return [
+                'uid'      => $i->id ?? $idx,
+                'name'     => $i->name ?? 'Unknown',
+                'quantity' => $i->quantity ?? 0,
+            ];
+        })->values()->toArray(),
     ];
 })->values();
 @endphp
@@ -81,7 +85,11 @@ $ordersJson = $orders->map(function($o) {
         saveOrder() {
             fetch('/order/store', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
                 body: JSON.stringify({ cart: this.cart, total: this.subtotal })
             })
             .then(r => r.json())
@@ -102,7 +110,7 @@ $ordersJson = $orders->map(function($o) {
                         total_amount: this.subtotal,
                         created_at: pad(now.getDate()) + ' ' + months[now.getMonth()] + ' ' + now.getFullYear(),
                         time: pad(h12) + ':' + pad(now.getMinutes()) + ' ' + ampm,
-                        items: this.cart.map(i => ({ name: i.name, quantity: i.qty })),
+                        items: this.cart.map((i, idx) => ({ uid: idx, name: i.name, quantity: i.qty })),
                     });
 
                     this.cart = [];
@@ -123,8 +131,12 @@ $ordersJson = $orders->map(function($o) {
 
         updateStatus() {
             fetch('/order/' + this.editOrderId + '/status', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
                 body: JSON.stringify({ status: this.editOrderStatus })
             })
             .then(r => r.json())
@@ -145,7 +157,11 @@ $ordersJson = $orders->map(function($o) {
             if (!confirm('Delete order #' + id + '? This cannot be undone.')) return;
             fetch('/order/' + id, {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
             })
             .then(r => r.json())
             .then(data => {
@@ -362,7 +378,7 @@ $ordersJson = $orders->map(function($o) {
 
                                     <td class="p-4">
                                         <div class="flex flex-col gap-1">
-                                            <template x-for="item in order.items" :key="item.name">
+                                            <template x-for="(item, idx) in (order.items || [])" :key="(order.id + '-' + idx)">
                                                 <div class="flex items-center gap-2">
                                                     <span class="inline-flex items-center justify-center w-5 h-5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full leading-none" x-text="item.quantity"></span>
                                                     <span class="text-gray-700" x-text="item.name"></span>
@@ -405,11 +421,11 @@ $ordersJson = $orders->map(function($o) {
                                     <td class="p-4 whitespace-nowrap">
                                         <div class="flex items-center justify-center gap-2">
                                             <button @click="openStatusModal(order.id, order.status)"
-                                                class="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-800 hover:text-white hover:border-gray-800 transition" title="Change Status">
+                                                class="p-2 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-500 hover:text-blue-600 transition" title="Change Status">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                             </button>
                                             <button @click="deleteOrder(order.id)"
-                                                class="flex items-center justify-center w-8 h-8 rounded-lg border border-red-300 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 transition" title="Delete Order">
+                                                class="p-2 rounded-lg border border-gray-200 hover:border-red-400 hover:bg-red-50 text-gray-500 hover:text-red-600 transition" title="Delete Order">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                             </button>
                                         </div>
@@ -513,4 +529,5 @@ $ordersJson = $orders->map(function($o) {
         </div>
         <div class="mt-12 text-center text-xs"><p>Thank you for dining with us!</p></div>
     </div>
+
 </div>
