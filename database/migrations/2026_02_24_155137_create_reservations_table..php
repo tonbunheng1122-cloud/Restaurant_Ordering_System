@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('phone_number');
             $table->date('date');
             $table->time('time');
-            $table->string('table_id'); // From your selection grid
+            $table->string('table_id');
             $table->timestamps();
         });
     }

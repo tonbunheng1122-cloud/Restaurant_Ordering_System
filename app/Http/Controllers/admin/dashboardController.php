@@ -21,17 +21,17 @@ class DashboardController extends Controller
         $totalRevenue    = Order::sum('total_amount');
         $recentProducts  = Product::with('category')->latest()->take(5)->get();
 
-        // ── Sales Overview — ប្រចាំថ្ងៃ 30 ថ្ងៃចុងក្រោយ ──────────────────────
+        
         $start = Carbon::now()->subDays(29)->startOfDay();
         $end   = Carbon::now()->endOfDay();
 
-        // Build all 30 days with 0 default
+        
         $allDays = collect();
         for ($d = $start->copy(); $d->lte($end); $d->addDay()) {
             $allDays[$d->format('d M')] = 0;
         }
 
-        // Fix: group by DATE only, format in PHP not MySQL
+        
         $salesRaw = Order::selectRaw("DATE(created_at) as day_date, SUM(total_amount) as total")
             ->whereBetween('created_at', [$start, $end])
             ->groupByRaw("DATE(created_at)")
@@ -42,13 +42,13 @@ class DashboardController extends Controller
                 return [$label => (float) $row->total];
             });
 
-        // Merge — keep all 30 days, fill 0 where no orders
+        
         $merged = $allDays->merge($salesRaw);
 
         $salesLabels = $merged->keys();
         $salesValues = $merged->values()->map(fn($v) => round((float)$v, 2));
 
-        // ── Today vs Yesterday ──────────────────────────────────────────────────
+        
         $todayRevenue     = Order::whereDate('created_at', today())->sum('total_amount');
         $yesterdayRevenue = Order::whereDate('created_at', today()->subDay())->sum('total_amount');
         $revenueChange    = $yesterdayRevenue > 0

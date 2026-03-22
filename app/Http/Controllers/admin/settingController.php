@@ -50,9 +50,9 @@ class SettingController extends Controller
             'hero_image'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        // Handle hero image upload
+        
         if ($request->hasFile('hero_image')) {
-            // Delete old image if exists
+            
             $old = Setting::get('hero_image');
             if ($old && Storage::disk('public')->exists($old)) {
                 Storage::disk('public')->delete($old);
@@ -61,7 +61,7 @@ class SettingController extends Controller
             Setting::set('hero_image', $path);
         }
 
-        // Save all text fields
+        
         $fields = ['restaurant_name', 'tagline', 'description', 'phone', 'email',
                    'address', 'currency', 'timezone', 'logo_text',
                    'delivery_time', 'total_dishes', 'happy_customers', 'rating'];

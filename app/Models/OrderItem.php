@@ -18,7 +18,6 @@ class OrderItem extends Model
         return $this->belongsTo(Order::class);
     }
 
-    // ✅ Add this relation to fix the error
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id', 'id');

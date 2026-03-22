@@ -59,10 +59,10 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
 
-
-===========================================================================================
 ## INSTALL (PHP 8.4 , LARAVEL 12)
 <!-- PHP 8.4 version -->
+composer update
+
 composer install
 
 npm install
@@ -71,7 +71,7 @@ cp .env.example .env
 
 php artisan key:generate
 
-php artisan migrate -> yes
+php artisan migrate (SELCET) -> yes FOR Create table on BD
 
 <!-- Tailwindcss -->
 npm install tailwindcss @tailwindcss/vite
@@ -80,6 +80,7 @@ npm install tailwindcss @tailwindcss/vite
 RUN FOR MAC : npm run dev & php artisan serve 
 
 RUN FOR WINDONW : npm run dev , (NEW TERMINAL) : php artisan serve 
-===========================================================================================
 
+## RUN INSERT USERNAME AND PASSWORD FOR LOGIN
+<!-- LOGIN USERNAME AND PASSWORD -->
 #When delete default admin run the command this // php artisan db:seed --class=AdminSeeder

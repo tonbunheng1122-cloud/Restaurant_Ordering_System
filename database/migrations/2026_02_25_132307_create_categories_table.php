@@ -11,9 +11,9 @@ return new class extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('code')->nullable(); // For the '0001' style code in your table
+            $table->string('code')->nullable(); 
             $table->text('description')->nullable();
-            $table->string('image')->nullable(); // For category thumbnails
+            $table->string('image')->nullable(); 
             $table->timestamps();
         });
     }

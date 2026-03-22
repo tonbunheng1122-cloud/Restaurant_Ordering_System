@@ -8,18 +8,18 @@ use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
-    // Page 1: Show all reservations
+    
     public function index() {
         $reservations = Reservation::latest()->paginate(10);
         return view('admin.itemMenu.alltable', compact('reservations'));
     }
 
-    // Page 2: Show the create form
+
     public function create() {
         return view('admin.itemMenu.addtable');
     }
 
-    // Save the data
+
     public function store(Request $request) {
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
@@ -33,12 +33,12 @@ class ReservationController extends Controller
 
         return redirect()->route('alltable.index')->with('success', 'Table reserved successfully!');
     }
-    // Show edit form
+    
     public function edit($id) {
         $reservation = Reservation::findOrFail($id);
         return view('admin.itemMenu.addtable', compact('reservation'));
     }
-    // Update the reservation
+    
     public function update(Request $request, $id) {
         $reservation = Reservation::findOrFail($id);
 
@@ -53,13 +53,13 @@ class ReservationController extends Controller
         return redirect()->route('alltable.index')
                          ->with('success', 'Table updated successfully');
     }
-    // Delete a reservation
+    
     public function destroy($id) {
         $reservation = Reservation::findOrFail($id);
         $reservation->delete();
         return redirect()->route('alltable.index')->with('success', 'Table deleted!');
     }
-    // Search 
+    
     public function search(Request $request){
         $query = $request->input('query');
         $reservations = Reservation::query()
@@ -67,7 +67,7 @@ class ReservationController extends Controller
             ->orWhere('phone_number', 'like', "%{$query}%")
             ->latest()
             ->paginate(10)
-            ->withQueryString(); // keeps the search query in pagination links
+            ->withQueryString(); 
 
         return view('admin.itemMenu.alltable', compact('reservations', 'query'));
     }

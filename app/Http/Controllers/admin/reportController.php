@@ -25,12 +25,12 @@ class ReportController extends Controller
         ));
     }
 
-    // ===================== EXCEL EXPORT =====================
+    
     public function exportExcel(Request $request)
     {
         $type = $request->get('type', 'all');
 
-        // Build CSV content
+        
         $rows    = [];
         $headers = [];
 
@@ -63,7 +63,7 @@ class ReportController extends Controller
                 }
                 break;
 
-            default: // all
+            default: 
                 $headers = ['Section', 'ID', 'Col1', 'Col2', 'Col3', 'Col4'];
                 foreach (Reservation::all() as $r) {
                     $rows[] = ['Reservation', $r->id, $r->full_name, $r->phone_number, $r->date . ' ' . $r->time, 'Table ' . $r->table_id];
@@ -97,7 +97,7 @@ class ReportController extends Controller
         ]);
     }
 
-    // ===================== PDF EXPORT =====================
+    
     public function exportPdf(Request $request)
     {
         $type = $request->get('type', 'all');
@@ -113,7 +113,6 @@ class ReportController extends Controller
 
         $html = view('components.report_pdf', $data)->render();
 
-        // Use wkhtmltopdf via Symfony Process if available, otherwise return HTML as download
         $filename = 'fastbite-report-' . $type . '-' . now()->format('Ymd-His') . '.html';
 
         return response($html, 200, [
@@ -122,16 +121,4 @@ class ReportController extends Controller
         ]);
     }
 }
-
-
-
-
-// Test API respose json
-// return response()->json([
-//     'products' => $products, 
-//     'categories' => $categories,
-//     'orders' => $orders,
-//     'reservations' => $reservations
-// ]);
-        
         

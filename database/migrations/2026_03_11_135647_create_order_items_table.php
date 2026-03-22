@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-// In File ...create_order_items_table.php
 public function up(): void
 {
     Schema::create('order_items', function (Blueprint $table) {

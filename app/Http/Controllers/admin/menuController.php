@@ -17,7 +17,7 @@ class MenuController extends Controller
 {
     const LOW_STOCK = 2;
 
-    // ── SHOW MENU PAGE ─────────────────────────────────────────────────────────
+    
     public function pageMenu()
     {
         $categories = Category::withCount('products')
@@ -50,7 +50,7 @@ class MenuController extends Controller
         ));
     }
 
-    // ── SAVE ORDER + TELEGRAM ──────────────────────────────────────────────────
+    
     public function storeOrder(Request $request)
     {
         try {
@@ -65,7 +65,7 @@ class MenuController extends Controller
             $itemLines     = [];
 
             foreach ($request->cart as $item) {
-                // Save order item — name column required
+                
                 OrderItem::create([
                     'order_id'   => $order->id,
                     'product_id' => $item['id'],
@@ -90,7 +90,7 @@ class MenuController extends Controller
 
             DB::commit();
 
-            // ── Telegram: New Order notification ──
+            
             $this->sendTelegram(implode("\n", [
                 "🛎 *New Order — FastBite*",
                 "━━━━━━━━━━━━━━━━━━━━",
@@ -122,7 +122,7 @@ class MenuController extends Controller
         }
     }
 
-    // ── UPDATE STATUS + TELEGRAM ───────────────────────────────────────────────
+    
     public function updateStatus(Request $request, $id)
     {
         try {
@@ -165,7 +165,7 @@ class MenuController extends Controller
         }
     }
 
-    // ── DELETE ORDER + TELEGRAM ────────────────────────────────────────────────
+    
     public function destroyOrder($id)
     {
         try {
@@ -187,7 +187,7 @@ class MenuController extends Controller
                 implode("\n", $itemLines ?: ["• (no items)"]),
                 "━━━━━━━━━━━━━━━━━━━━",
                 "*Total was: \$" . number_format($total, 2) . "*",
-                "_Deleted by admin._",
+                "_Deleted by User._",
             ]));
 
             return response()->json(['message' => 'Order deleted']);
@@ -197,7 +197,7 @@ class MenuController extends Controller
         }
     }
 
-    // ── TELEGRAM: STOCK ALERT ──────────────────────────────────────────────────
+    
     private function sendStockAlert(Product $product): void
     {
         $emoji   = $product->qty <= 0 ? '🚫' : '⚠️';
@@ -214,7 +214,7 @@ class MenuController extends Controller
         ]));
     }
 
-    // ── TELEGRAM: SEND MESSAGE ─────────────────────────────────────────────────
+    
     private function sendTelegram(string $message): void
     {
         $botToken = Setting::get('telegram_bot_token') ?? env('TELEGRAM_BOT_TOKEN');

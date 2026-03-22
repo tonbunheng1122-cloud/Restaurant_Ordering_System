@@ -19,7 +19,6 @@ class Product extends Model
         'category_id',
         'images'
     ];
-    // បន្ថែមផ្នែកនេះដើម្បីដោះស្រាយ Error "Array to string conversion"
     protected $casts = [
         'images' => 'array',
     ];
