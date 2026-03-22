@@ -58,8 +58,10 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Menu & Orders
-    Route::get('/menu',         [MenuController::class, 'pageMenu'])   ->name('menu.index');
-    Route::post('/order/store', [MenuController::class, 'storeOrder']) ->name('order.store');
+    Route::get('/menu',                        [MenuController::class, 'pageMenu'])      ->name('menu.index');
+    Route::post('/order/store',                [MenuController::class, 'storeOrder'])    ->name('order.store');
+    Route::post('/order/{id}/status',         [MenuController::class, 'updateStatus'])  ->name('order.status');
+    Route::delete('/order/{id}',               [MenuController::class, 'destroyOrder'])  ->name('order.destroy');
 
     // Reservations / Tables
     Route::controller(ReservationController::class)->group(function () {

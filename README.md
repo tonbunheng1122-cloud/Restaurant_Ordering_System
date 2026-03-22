@@ -62,7 +62,7 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ===========================================================================================
 ## INSTALL (PHP 8.4 , LARAVEL 12)
-<!-- PHP Last version -->
+<!-- PHP 8.4 version -->
 composer install
 
 npm install
@@ -71,7 +71,7 @@ cp .env.example .env
 
 php artisan key:generate
 
-php artisan migrate(yes)
+php artisan migrate -> yes
 
 <!-- Tailwindcss -->
 npm install tailwindcss @tailwindcss/vite

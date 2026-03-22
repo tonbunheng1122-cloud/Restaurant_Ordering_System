@@ -5,7 +5,6 @@
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #EE6D3C; border-radius: 10px; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
-    .main-container { height: 100vh; overflow: hidden; }
 </style>
 <title>FastBite | Dashboard</title>
 
@@ -211,7 +210,7 @@
                             <span class="text-[10px] font-bold uppercase">Products</span>
                         </a>
 
-                        <a href="{{ route('alltable.index') }}"
+                        <a href="{{ route('reservations.index') }}"
                             class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-xl hover:bg-[#EE6D3C] hover:text-white transition-all group text-gray-600">
                             <svg class="w-5 h-5 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/>
@@ -241,14 +240,33 @@
 
                 <!-- Sales Chart -->
                 <div class="bg-white rounded-2xl shadow-sm border border-orange-50 p-6 lg:col-span-3">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-gray-800 flex items-center gap-2">
-                            <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
-                            Sales Overview
-                        </h3>
-                        <span class="text-xs text-gray-400">Last 6 months</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                                <span class="w-1.5 h-5 bg-[#EE6D3C] rounded-full"></span>
+                                Sales Overview
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-0.5">Daily revenue — last 30 days</p>
+                        </div>
+                        {{-- Today stats --}}
+                        <div class="flex gap-4">
+                            <div class="bg-orange-50 rounded-xl px-4 py-2.5 text-center">
+                                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Today Revenue</p>
+                                <p class="text-lg font-black text-gray-800">${{ number_format($todayRevenue, 2) }}</p>
+                                <p class="text-xs font-bold {{ $revenueChange >= 0 ? 'text-green-600' : 'text-red-500' }}">
+                                    {{ $revenueChange >= 0 ? '+' : '' }}{{ $revenueChange }}% vs yesterday
+                                </p>
+                            </div>
+                            <div class="bg-orange-50 rounded-xl px-4 py-2.5 text-center">
+                                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Today Orders</p>
+                                <p class="text-lg font-black text-gray-800">{{ $todayOrders }}</p>
+                                <p class="text-xs font-bold {{ $ordersChange >= 0 ? 'text-green-600' : 'text-red-500' }}">
+                                    {{ $ordersChange >= 0 ? '+' : '' }}{{ $ordersChange }}% vs yesterday
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <canvas id="salesChart" height="90"></canvas>
+                    <canvas id="salesChart" height="80"></canvas>
                 </div>
 
             </div>
@@ -260,29 +278,47 @@
 document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById('salesChart');
     new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: {!! json_encode($salesLabels) !!},
-            datasets: [{
-                label: 'Revenue ($)',
-                data: {!! json_encode($salesValues) !!},
-                borderColor: '#EE6D3C',
-                backgroundColor: 'rgba(238,109,60,0.1)',
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#EE6D3C',
-                pointRadius: 5,
-                pointHoverRadius: 7,
-            }]
+            datasets: [
+                {
+                    label: 'Revenue ($)',
+                    data: {!! json_encode($salesValues) !!},
+                    backgroundColor: function(context) {
+                        const index = context.dataIndex;
+                        const count = context.dataset.data.length;
+                        return index === count - 1
+                            ? '#EE6D3C'
+                            : 'rgba(238,109,60,0.25)';
+                    },
+                    borderColor: '#EE6D3C',
+                    borderWidth: 1.5,
+                    borderRadius: 6,
+                    borderSkipped: false,
+                },
+                {
+                    label: 'Trend',
+                    data: {!! json_encode($salesValues) !!},
+                    type: 'line',
+                    borderColor: '#EE6D3C',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#EE6D3C',
+                }
+            ]
         },
         options: {
             responsive: true,
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: ctx => ' $' + ctx.parsed.y.toLocaleString()
+                        label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toLocaleString()
                     }
                 }
             },
@@ -290,12 +326,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 y: {
                     beginAtZero: true,
                     grid: { color: 'rgba(0,0,0,0.04)' },
-                    ticks: {
-                        callback: val => '$' + val.toLocaleString()
-                    }
+                    ticks: { callback: val => '$' + val.toLocaleString() }
                 },
                 x: {
-                    grid: { display: false }
+                    grid: { display: false },
+                    ticks: {
+                        maxRotation: 45,
+                        autoSkip: true,
+                        maxTicksLimit: 15
+                    }
                 }
             }
         }
