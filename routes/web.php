@@ -14,6 +14,28 @@ use App\Http\Controllers\admin\LogoutController;
 use App\Http\Controllers\admin\UserController;
 
 // ================================================================================
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Cache;
+Route::get('/test-redis', function () {
+    try {
+        // Testing with the Redis Facade directly
+        Redis::set('fastbite_status', 'Redis is working!');
+        $redis_status = Redis::get('fastbite_status');
+
+        // Testing with the Cache Driver (which we set to Redis in .env)
+        Cache::put('cache_test', 'Cache is also working!', 10);
+        $cache_status = Cache::get('cache_test');
+
+        return response()->json([
+            'redis_direct' => $redis_status,
+            'cache_driver' => $cache_status,
+            'message' => 'Redis connection 100% successful!'
+        ]);
+    } catch (\Exception $e) {
+        return "Error: Could not connect to Redis! " . $e->getMessage();
+    }
+});
+// ================================================================================
 // PUBLIC ROUTES
 // ================================================================================
 

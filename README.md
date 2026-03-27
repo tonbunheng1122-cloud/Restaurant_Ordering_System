@@ -83,4 +83,5 @@ RUN FOR WINDONW : npm run dev , (NEW TERMINAL) : php artisan serve
 
 ## RUN INSERT USERNAME AND PASSWORD FOR LOGIN
 <!-- LOGIN USERNAME AND PASSWORD -->
-#When delete default admin run the command this // php artisan db:seed --class=AdminSeeder
+#When delete default admin run the command this 
+// php artisan db:seed --class=AdminSeeder

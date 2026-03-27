@@ -16,6 +16,10 @@ return new class extends Migration
             $table->time('time');
             $table->string('table_id');
             $table->timestamps();
+    
+            // SET INDEX FOR 
+            $table->index('date','time','table_id');
+            $table->index('phone_number');
         });
     }
     public function down(): void

@@ -9,7 +9,7 @@ class Logins extends Authenticatable
 {
     use Notifiable;
 
-    protected $table = 'logins'; // Ensure this matches your DB table name
+    protected $table = 'logins'; 
 
     protected $fillable = [
         'username',
