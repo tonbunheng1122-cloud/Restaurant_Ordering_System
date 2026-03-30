@@ -1,87 +1,130 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# FastBite — Notification System Integration Guide
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## What's Changed
 
-## About Laravel
+| Before | After |
+|--------|-------|
+| Dark mode toggle in sidebar | **Notification Bell** with red badge |
+| User types DELETE → account deleted immediately | User types DELETE → **sends request to admin** |
+| No admin visibility | Admin sees pending requests in **slide-in notification panel** |
+| — | Admin clicks **Approve & Delete** → confirmation modal → account erased |
+| — | Admin can **Dismiss** to reject and close the request |
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Files in This Package
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```
+fastbite-notifications/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── ProfileController.php       ← updated
+│   │   │   ├── NotificationController.php  ← NEW
+│   │   │   └── SettingController.php       ← updated (passes $pendingDeletionCount)
+│   │   └── Middleware/
+│   │       └── AdminMiddleware.php         ← NEW (if you don't already have one)
+│   └── Models/
+│       └── DeletionRequest.php             ← NEW
+├── database/migrations/
+│   └── 2024_01_01_000001_create_deletion_requests_table.php  ← NEW
+├── resources/views/
+│   ├── components/
+│   │   ├── asidebar.blade.php              ← REPLACED (bell replaces dark toggle)
+│   │   └── notifications-panel.blade.php   ← NEW
+│   └── settings/
+│       └── index.blade.php                 ← REPLACED
+└── routes_web_additions.php                ← add these to your routes/web.php
+```
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Step-by-Step Integration
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 1. Run the Migration
+```bash
+php artisan migrate
+```
 
-## Laravel Sponsors
+### 2. Copy Model
+Copy `app/Models/DeletionRequest.php` into your project's `app/Models/` folder.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 3. Copy Controllers
+Replace/update the three controllers in `app/Http/Controllers/`:
+- `ProfileController.php`
+- `NotificationController.php`  
+- `SettingController.php`
 
-### Premium Partners
+### 4. Register Admin Middleware
+In `app/Http/Kernel.php`, add to `$routeMiddleware`:
+php
+'admin' => \App\Http\Middleware\AdminMiddleware::class,
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+If you already have an admin middleware, update the name in `routes_web_additions.php` accordingly.
 
-## Contributing
+### 5. Add Routes
+Open `routes/web.php` and paste in the contents of `routes_web_additions.php`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 6. Copy Blade Views
+- Replace `resources/views/components/asidebar.blade.php`
+- Add `resources/views/components/notifications-panel.blade.php`  
+- Replace `resources/views/settings/index.blade.php`
 
-## Code of Conduct
+### 7. Gate Policy (optional but recommended)
+In `NotificationController`, the `$this->authorize('admin')` calls use Gates.  
+Add this to `App\Providers\AuthServiceProvider::boot()`:
+php
+Gate::define('admin', function ($user) {
+    return $user->role === 'Admin';
+});
+Or remove the `$this->authorize('admin')` lines if you rely on the middleware alone.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## How the Flow Works
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### User Side
+1. User goes to Settings → Profile → Danger Zone
+2. Types `DELETE` to unlock the button
+3. Clicks **Request Deletion** — a `DeletionRequest` record is created (`status = pending`)
+4. The button disappears; a yellow "pending" badge appears instead
+5. Admin gets a notification with the badge count on the bell
 
-## License
+### Admin Side
+1. Bell icon in sidebar shows red badge with count
+2. Admin clicks bell → right-side panel slides open
+3. Admin sees each pending request with username + timestamp
+4. Two options per request:
+   - **Approve & Delete** → opens confirmation modal → clicks OK → account + all data deleted
+   - **Dismiss** → marks request as dismissed, user account kept, notification clears
+5. Toast confirms the action
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Notes
+- A user can only have **one pending request at a time** (enforced in `ProfileController::requestDeletion`)
+- If the user is deleted, the `deletion_requests` row is cascade-deleted (via the migration foreign key)
+- The `reviewed_by` column records which admin took the action
+- The notification panel is **only rendered for Admin users** — regular users see nothing
 
 
 ## INSTALL (PHP 8.4 , LARAVEL 12)
 <!-- PHP 8.4 version -->
 composer update
-
 composer install
-
 npm install
-
 cp .env.example .env
-
 php artisan key:generate
-
 php artisan migrate (SELCET) -> yes FOR Create table on BD
-
 <!-- Tailwindcss -->
 npm install tailwindcss @tailwindcss/vite
+<!-- RUN FOR Store Picture -->
+php artisan storage:link
 
 ## RUN (Open Terminal)
 RUN FOR MAC : npm run dev & php artisan serve 
-
 RUN FOR WINDONW : npm run dev , (NEW TERMINAL) : php artisan serve 
 
-## RUN INSERT USERNAME AND PASSWORD FOR LOGIN
+## RUN INSERT USERNAME AND PASSWORD FOR LOGIN WHEN DELETE DEFAULT ADMIN RUN THE THIS COMMAND
 <!-- LOGIN USERNAME AND PASSWORD -->
-#When delete default admin run the command this 
-// php artisan db:seed --class=AdminSeeder
+php artisan db:seed --class=AdminSeeder

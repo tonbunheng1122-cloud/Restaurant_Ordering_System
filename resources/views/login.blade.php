@@ -18,17 +18,11 @@
 
                 <!-- Logo & Title -->
                 <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-14 h-14 bg-[#FFE4DB] rounded-2xl mb-4">
-                        <svg class="w-7 h-7 text-[#EE6D3C]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
+                    <div class="inline-flex items-center justify-center size-35 mb-4">
+                        <img src="{{ Vite::asset('resources/images/FASTBITE_LOGO.png') }}" alt="Logo">
                     </div>
-                    <h1 class="text-2xl font-black text-gray-800 tracking-tight">
-                        Fast<span class="text-[#EE6D3C]">Bite</span>
-                    </h1>
                     <p class="text-sm text-gray-400 mt-1">Welcome back! Please sign in to continue.</p>
                 </div>
-
                 <!-- Success Flash -->
                 @if(session('success'))
                 <div class="flex items-center gap-2 mb-5 p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">

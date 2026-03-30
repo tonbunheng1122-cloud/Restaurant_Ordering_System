@@ -17,7 +17,6 @@
 
         <main class="flex-1 overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
 
-            <!-- Mobile menu button -->
             <button @click="mobileMenuOpen = true"
                 class="bg-[#EE6D3C] text-white p-3 rounded-2xl shadow-lg block md:hidden mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -26,6 +25,8 @@
             </button>
 
             <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-4 mb-8">
+
+                @include('components.alerts')
 
                 <!-- Header -->
                 <div class="flex items-center gap-3 mb-8">

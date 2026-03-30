@@ -5,11 +5,16 @@ namespace App\Http\Controllers\admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
-    public function pageSetting()
+    /**
+     * Show the settings page (General + Profile tabs).
+     * Accepts ?tab=general|profile in the URL to restore the active tab after redirect.
+     */
+    public function pageSetting(Request $request)
     {
         $settings = [
             'restaurant_name' => Setting::get('restaurant_name', 'FastBite'),
@@ -28,9 +33,15 @@ class SettingController extends Controller
             'rating'          => Setting::get('rating', '4.9'),
         ];
 
-        return view('admin.itemMenu.setting', compact('settings'));
+        $user    = Auth::user();
+        $tab     = $request->query('tab', 'general'); // 'general' | 'profile'
+
+        return view('admin.itemMenu.setting', compact('settings', 'user', 'tab'));
     }
 
+    /**
+     * Save general/system settings.
+     */
     public function save(Request $request)
     {
         $request->validate([
@@ -50,9 +61,7 @@ class SettingController extends Controller
             'hero_image'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        
         if ($request->hasFile('hero_image')) {
-            
             $old = Setting::get('hero_image');
             if ($old && Storage::disk('public')->exists($old)) {
                 Storage::disk('public')->delete($old);
@@ -61,10 +70,11 @@ class SettingController extends Controller
             Setting::set('hero_image', $path);
         }
 
-        
-        $fields = ['restaurant_name', 'tagline', 'description', 'phone', 'email',
-                   'address', 'currency', 'timezone', 'logo_text',
-                   'delivery_time', 'total_dishes', 'happy_customers', 'rating'];
+        $fields = [
+            'restaurant_name', 'tagline', 'description', 'phone', 'email',
+            'address', 'currency', 'timezone', 'logo_text',
+            'delivery_time', 'total_dishes', 'happy_customers', 'rating',
+        ];
 
         foreach ($fields as $key) {
             Setting::set($key, $request->input($key));
@@ -74,6 +84,9 @@ class SettingController extends Controller
             ->with('success', 'Settings saved successfully.');
     }
 
+    /**
+     * Remove the hero image.
+     */
     public function deleteImage()
     {
         $old = Setting::get('hero_image');

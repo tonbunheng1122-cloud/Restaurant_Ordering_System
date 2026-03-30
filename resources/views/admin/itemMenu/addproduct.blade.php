@@ -11,14 +11,12 @@
 <div class="bg-[#FFE4DB] min-h-screen">
     <div class="flex h-screen p-2 md:p-4 gap-4 md:gap-6 overflow-hidden">
 
-        <!-- Sidebar -->
         <aside>
             @include('components.asidebar')
         </aside>
 
         <main class="flex-1 overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
 
-            <!-- Mobile menu button -->
             <button class="bg-[#EE6D3C] text-white p-3 rounded-2xl shadow-lg block md:hidden mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
@@ -26,6 +24,8 @@
             </button>
 
             <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-4 mb-8">
+
+                @include('components.alerts')
 
                 <!-- Header -->
                 <div class="flex items-center gap-3 mb-8">
@@ -53,10 +53,8 @@
 
                     <div class="flex flex-col xl:flex-row gap-8">
 
-                        <!-- Left: Fields -->
                         <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-                            <!-- Name -->
                             <div class="flex flex-col gap-2">
                                 <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Name *</label>
                                 <input type="text" name="name" required
@@ -64,12 +62,9 @@
                                     placeholder="Enter product name"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
                                         @error('name') border-red-400 @enderror">
-                                @error('name')
-                                    <span class="text-red-500 text-xs">{{ $message }}</span>
-                                @enderror
+                                @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
-                            <!-- Qty -->
                             <div class="flex flex-col gap-2">
                                 <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Qty *</label>
                                 <input type="number" name="qty" required
@@ -77,12 +72,9 @@
                                     placeholder="0"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
                                         @error('qty') border-red-400 @enderror">
-                                @error('qty')
-                                    <span class="text-red-500 text-xs">{{ $message }}</span>
-                                @enderror
+                                @error('qty') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
-                            <!-- Price -->
                             <div class="flex flex-col gap-2">
                                 <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Price *</label>
                                 <div class="relative">
@@ -93,12 +85,9 @@
                                         class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
                                             @error('price') border-red-400 @enderror">
                                 </div>
-                                @error('price')
-                                    <span class="text-red-500 text-xs">{{ $message }}</span>
-                                @enderror
+                                @error('price') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
-                            <!-- Cost -->
                             <div class="flex flex-col gap-2">
                                 <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Cost *</label>
                                 <div class="relative">
@@ -109,12 +98,9 @@
                                         class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
                                             @error('cost') border-red-400 @enderror">
                                 </div>
-                                @error('cost')
-                                    <span class="text-red-500 text-xs">{{ $message }}</span>
-                                @enderror
+                                @error('cost') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
-                            <!-- Category -->
                             <div class="flex flex-col gap-2">
                                 <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Category *</label>
                                 <select name="category_id" required
@@ -128,12 +114,9 @@
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('category_id')
-                                    <span class="text-red-500 text-xs">{{ $message }}</span>
-                                @enderror
+                                @error('category_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
-                            <!-- Count -->
                             <div class="flex flex-col gap-2">
                                 <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Count *</label>
                                 <input type="number" name="count" required
@@ -141,12 +124,9 @@
                                     placeholder="0"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
                                         @error('count') border-red-400 @enderror">
-                                @error('count')
-                                    <span class="text-red-500 text-xs">{{ $message }}</span>
-                                @enderror
+                                @error('count') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
-                            <!-- Description -->
                             <div class="sm:col-span-2 flex flex-col gap-2">
                                 <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Description</label>
                                 <textarea name="description" rows="5"
@@ -156,23 +136,15 @@
 
                         </div>
 
-                        <!-- Right: Image Upload -->
                         <div class="w-full xl:w-80 flex-shrink-0">
                             <label class="font-bold text-gray-700 text-sm uppercase tracking-wide block mb-3">Product Image</label>
-
                             <div class="relative group rounded-xl border-2 border-dashed border-gray-300 hover:border-[#EE6D3C] transition overflow-hidden bg-gray-50 aspect-square flex items-center justify-center cursor-pointer">
-
-                                <!-- Hidden file input -->
                                 <input type="file" name="images" accept="image/*"
                                     @change="handleFile($event)"
                                     class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-
-                                <!-- Preview -->
                                 <template x-if="previewUrl">
                                     <img :src="previewUrl" class="w-full h-full object-cover absolute inset-0">
                                 </template>
-
-                                <!-- Placeholder -->
                                 <template x-if="!previewUrl">
                                     <div class="text-center p-6 pointer-events-none">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-300 group-hover:text-[#EE6D3C] transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -182,20 +154,16 @@
                                         <p class="text-xs text-gray-300 mt-1">PNG, JPG, WEBP</p>
                                     </div>
                                 </template>
-
-                                <!-- Hover overlay when image exists -->
                                 <template x-if="previewUrl">
                                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center z-0 pointer-events-none">
                                         <p class="text-white text-sm font-bold">Change Image</p>
                                     </div>
                                 </template>
-
                             </div>
                         </div>
 
                     </div>
 
-                    <!-- Footer Actions -->
                     <div class="flex flex-col sm:flex-row justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
                         <a href="{{ route('allproduct.index') }}"
                             class="px-6 py-3 border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition text-sm text-center">
