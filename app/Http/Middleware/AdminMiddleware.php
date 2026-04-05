@@ -13,7 +13,7 @@ class AdminMiddleware
         $user = Auth::user();
 
         if (!$user || $user->role !== 'Admin') {
-            return redirect('/dashboards')->with('error', 'Access denied. Admins only.');
+            return redirect('/user-dashboard')->with('error', 'Access denied. Admins only.');
         }
 
         return $next($request);

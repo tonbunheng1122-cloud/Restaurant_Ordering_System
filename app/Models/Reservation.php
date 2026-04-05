@@ -17,5 +17,11 @@ class Reservation extends Model
         'date',
         'time',
         'table_id',
+        'user_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(Logins::class, 'user_id');
+    }
 }

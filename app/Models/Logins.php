@@ -15,10 +15,30 @@ class Logins extends Authenticatable
         'username',
         'password',
         'role',
+        'last_seen',
+    ];
+
+    protected $casts = [
+        'last_seen' => 'datetime',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'user_id');
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class, 'user_id');
+    }
+
+    public function isOnline()
+    {
+        return $this->last_seen && $this->last_seen->diffInMinutes(now()) < 5;
+    }
 }

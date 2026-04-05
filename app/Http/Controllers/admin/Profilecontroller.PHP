@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\admin;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
+use App\Models\DeletionRequest;
 
 class ProfileController extends Controller
 {
@@ -101,26 +102,29 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the authenticated user's account.
+     * Request deletion of the authenticated user's account.
      */
     public function destroy(Request $request)
     {
-        if ($request->input('confirm_delete') !== 'DELETE') {
-            return back()->withErrors(['confirm_delete' => 'Please type DELETE to confirm.']);
-        }
+        $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
 
         $user = Auth::user();
 
-        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-            Storage::disk('public')->delete($user->avatar);
+        // Check if user already has a pending request
+        if (DeletionRequest::where('user_id', $user->id)->where('status', 'pending')->exists()) {
+            return back()->withErrors(['error' => 'You already have a pending deletion request.']);
         }
 
-        Auth::logout();
-        $user->delete();
+        // Create deletion request
+        DeletionRequest::create([
+            'user_id' => $user->id,
+            'reason' => $request->reason,
+            'status' => 'pending',
+        ]);
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/')->with('info', 'Your account has been deleted.');
+        return redirect()->route('setting.index', ['tab' => 'profile'])
+            ->with('success', 'Your account deletion request has been submitted. An admin will review it soon.');
     }
 }

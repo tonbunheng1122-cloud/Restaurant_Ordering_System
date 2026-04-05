@@ -1,41 +1,19 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Layouts\UserwebController;
+use App\Http\Controllers\layouts\UserwebController;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\admin\DashboardController;
-use App\Http\Controllers\admin\ProductController;
-use App\Http\Controllers\admin\CategoryController;
-use App\Http\Controllers\admin\MenuController;
-use App\Http\Controllers\admin\ReservationController;
-use App\Http\Controllers\admin\ReportController;
-use App\Http\Controllers\admin\SettingController;
-use App\Http\Controllers\admin\ProfileController;   // ← NEW
-use App\Http\Controllers\admin\LogoutController;
-use App\Http\Controllers\admin\UserController;
-
-// ================================================================================
-// TEST REDIS RUN OR NOT
-// ================================================================================
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Cache;
-Route::get('/test-redis', function () {
-    try {
-        Redis::set('fastbite_status', 'Redis is working!');
-        $redis_status = Redis::get('fastbite_status');
-
-        Cache::put('cache_test', 'Cache is also working!', 10);
-        $cache_status = Cache::get('cache_test');
-
-        return response()->json([
-            'redis_direct' => $redis_status,
-            'cache_driver' => $cache_status,
-            'message' => 'Redis connection 100% successful!'
-        ]);
-    } catch (\Exception $e) {
-        return "Error: Could not connect to Redis! " . $e->getMessage();
-    }
-});
+use App\Http\Controllers\Admin\Login\LogoutController;
+use App\Http\Controllers\Admin\Dashboard\DashboardController;
+use App\Http\Controllers\Admin\Product\ProductController;
+use App\Http\Controllers\Admin\Categories\CategoryController;
+use App\Http\Controllers\Admin\Reservation\ReservationController;
+use App\Http\Controllers\Admin\Report\ReportController;
+use App\Http\Controllers\Admin\Setting\SettingController;
+use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\User\UserController;
+use App\Http\Controllers\Admin\Menu\MenuController;
+use App\Http\Controllers\User\UserDashboardController;
 
 // ================================================================================
 // PUBLIC ROUTES
@@ -54,17 +32,27 @@ Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
 
     // Dashboard
-    Route::get('/dashboards', [DashboardController::class, 'pageDashboard'])->name('dashboard.index');
+    Route::get('/dashboards', function () {
+        if (auth()->user()->role === 'Admin') {
+            return app(DashboardController::class)->pageDashboard();
+        } else {
+            return app(UserDashboardController::class)->pageDashboard();
+        }
+    })->name('dashboard.index');
+
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/admin-dashboard', [DashboardController::class, 'pageDashboard'])->name('admin.dashboard');
+    });
 
     // Products
     Route::controller(ProductController::class)->group(function () {
-        Route::get('/allproducts',             'index') ->name('allproduct.index');
-        Route::get('/addproducts',             'create')->name('addproduct.index');
-        Route::post('/addproducts/store',      'store') ->name('addproduct.store');
-        Route::get('/products/edit/{id}',      'edit')  ->name('product.edit');
-        Route::put('/products/update/{id}',    'update')->name('product.update');
+        Route::get('/products-list',           'index')  ->name('allproduct.index');
+        Route::get('/products-form',           'create') ->name('products-form.index');
+        Route::post('/products-form/store',    'store')  ->name('products-form.store');
+        Route::get('/products/edit/{id}',      'edit')   ->name('product.edit');
+        Route::put('/products/update/{id}',    'update') ->name('product.update');
         Route::delete('/products/delete/{id}', 'destroy')->name('product.destroy');
-        Route::get('/products/{id}',           'show')  ->name('product.show');
+        Route::get('/products/{id}',           'show')   ->name('product.show');
     });
 
     // Categories
@@ -78,17 +66,19 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Menu & Orders
-    Route::get('/menu',                    [MenuController::class, 'pageMenu'])    ->name('menu.index');
-    Route::post('/order/store',            [MenuController::class, 'storeOrder'])  ->name('order.store');
-    Route::post('/order/{id}/status',      [MenuController::class, 'updateStatus'])->name('order.status');
-    Route::delete('/order/{id}',           [MenuController::class, 'destroyOrder'])->name('order.destroy');
+    Route::get('/menu',               [MenuController::class, 'pageMenu'])    ->name('menu.index');
+    Route::post('/order/store',       [MenuController::class, 'storeOrder'])  ->name('order.store');
+    Route::post('/order/{id}/status', [MenuController::class, 'updateStatus'])->name('order.status');
+    Route::delete('/order/{id}',      [MenuController::class, 'destroyOrder'])->name('order.destroy');
 
-    // Reservations / Tables
+    // User Dashboard
+    Route::get('/user-dashboard', [UserDashboardController::class, 'pageDashboard'])->name('user.dashboard');
+
+    // Reservations
     Route::controller(ReservationController::class)->group(function () {
-        Route::get('/alltables',           'index') ->name('alltable.index');
-        Route::get('/reservations',        'index') ->name('reservations.index');
-        Route::get('/addtables',           'create')->name('addtable.index');
-        Route::post('/reservations',       'store') ->name('reservations.store');
+        Route::get('/reservations',        'index')  ->name('reservations.index');
+        Route::get('/reservations/create', 'create') ->name('reservations.create');
+        Route::post('/reservations',       'store')  ->name('reservations.store');
         Route::delete('/reservations/{id}','destroy')->name('reservations.destroy');
     });
 
@@ -103,20 +93,25 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/export/excel', [ReportController::class, 'exportExcel'])->name('report.excel');
     Route::get('/reports/export/pdf',   [ReportController::class, 'exportPdf'])  ->name('report.pdf');
 
-    // ── Settings (General) ───────────────────────────────────────────────────────
+    // Settings
     Route::get('/settings',        [SettingController::class, 'pageSetting'])->name('setting.index');
-    Route::post('/settings/save',  [SettingController::class, 'save'])        ->name('setting.save');
-    Route::post('/settings/image', [SettingController::class, 'deleteImage']) ->name('setting.deleteImage');
+    Route::post('/settings/save',  [SettingController::class, 'save'])       ->name('setting.save');
+    Route::post('/settings/image', [SettingController::class, 'deleteImage'])->name('setting.deleteImage');
 
-    // Website content CRUD
-    Route::post('/setting/dish',               [SettingController::class, 'storeDish'])    ->name('setting.dish.store');
-    Route::post('/setting/dish/{id}/update',   [SettingController::class, 'updateDish'])   ->name('setting.dish.update');
-    Route::post('/setting/dish/{id}/delete',   [SettingController::class, 'destroyDish'])  ->name('setting.dish.destroy');
-    Route::post('/setting/ticker',             [SettingController::class, 'storeTicker'])  ->name('setting.ticker.store');
+    Route::post('/setting/dish',               [SettingController::class, 'storeDish'])   ->name('setting.dish.store');
+    Route::post('/setting/dish/{id}/update',   [SettingController::class, 'updateDish'])  ->name('setting.dish.update');
+    Route::post('/setting/dish/{id}/delete',   [SettingController::class, 'destroyDish']) ->name('setting.dish.destroy');
+    Route::post('/setting/ticker',             [SettingController::class, 'storeTicker']) ->name('setting.ticker.store');
     Route::post('/setting/ticker/{id}/delete', [SettingController::class, 'destroyTicker'])->name('setting.ticker.destroy');
-    Route::post('/setting/feature',            [SettingController::class, 'saveFeature'])  ->name('setting.feature.save');
+    Route::post('/setting/feature',            [SettingController::class, 'saveFeature']) ->name('setting.feature.save');
 
-    // ── Profile (inside Settings page — Profile tab) ─────────────────────────────
+    // Deletion Requests
+    Route::get('/deletion-requests',                      [SettingController::class, 'deletionRequests'])->name('deletion-requests.index');
+    Route::post('/deletion-requests/{id}/approve',        [SettingController::class, 'approveDeletion']) ->name('deletion-requests.approve');
+    Route::post('/deletion-requests/{id}/deny',           [SettingController::class, 'denyDeletion'])    ->name('deletion-requests.deny');
+    Route::delete('/deletion-requests/delete-all-approved', [SettingController::class, 'deleteAllApproved'])->name('deletion-requests.delete-all-approved');
+
+    // Profile
     Route::post('/settings/profile/info',     [ProfileController::class, 'updateInfo'])    ->name('profile.updateInfo');
     Route::post('/settings/profile/avatar',   [ProfileController::class, 'updateAvatar'])  ->name('profile.updateAvatar');
     Route::post('/settings/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
