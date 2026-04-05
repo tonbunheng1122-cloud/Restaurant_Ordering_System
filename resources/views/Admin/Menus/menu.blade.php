@@ -29,7 +29,7 @@ $ordersJson = $orders->map(function($o) {
         'items'        => $o->items->map(function($i, $idx) {
             return [
                 'uid'      => $i->id ?? $idx,
-                'name'     => $i->product->name,
+                'name'     => $i->product?->name ?? $i->name ?? 'Deleted Product',
                 'quantity' => $i->quantity,
             ];
         })->values()->toArray(),
@@ -57,7 +57,7 @@ $ordersJson = $orders->map(function($o) {
         stockAlerts: [],
         toast: null,
         currentPage: 1,
-        perPage: 6,
+        perPage: 5,
 
         /* ── KHQR state ── */
         khqrDataUrl: null,

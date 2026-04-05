@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin\Categories;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; 
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -15,44 +15,39 @@ class CategoryController extends Controller
         $query = Category::query();
 
         if ($request->search) {
-            $query->where('name','like','%'.$request->search.'%');
+            $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $categories = $query->latest()->paginate(10);
+        $categories = $query->latest()->paginate(5);
 
-        return view('Admin.Categories.category-list',
-            compact('categories'));
+        return view('Admin.Categories.category-list', compact('categories'));
     }
 
-    
     public function pageAddcategory()
     {
         return view('Admin.Categories.category-form');
     }
 
-    
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|unique:categories|max:255',
+            'name'  => 'required|unique:categories|max:255',
             'image' => 'nullable|image|max:2048'
         ]);
 
-        $data = $request->only('name','description');
+        $data = $request->only('name', 'description');
 
         if ($request->hasFile('image')) {
-            $data['image'] =
-                $request->file('image')->store('categories','public');
+            $data['image'] = $request->file('image')->store('categories', 'public');
         }
 
         Category::create($data);
 
         return redirect()->route('allcategory.index')
-            ->with('success','Category Created!');
+            ->with('success', 'Category Created!');
     }
 
-    
-   public function edit($id)
+    public function edit($id)
     {
         $category = Category::findOrFail($id);
         return view('Admin.Categories.category-form', compact('category'));
@@ -63,42 +58,37 @@ class CategoryController extends Controller
         $category = Category::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|max:255|unique:categories,name,'.$id,
+            'name'  => 'required|max:255|unique:categories,name,' . $id,
             'image' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only('name','description');
+        $data = $request->only('name', 'description');
 
         if ($request->hasFile('image')) {
-            
             if ($category->image && Storage::disk('public')->exists($category->image)) {
                 Storage::disk('public')->delete($category->image);
             }
 
-            
             $data['image'] = $request->file('image')->store('categories', 'public');
         }
 
         $category->update($data);
 
         return redirect()->route('allcategory.index')
-            ->with('success','Category Updated Successfully!');
+            ->with('success', 'Category Updated Successfully!');
     }
 
-    
     public function destroy($id)
     {
         $category = Category::findOrFail($id);
 
-        
         if ($category->image && Storage::disk('public')->exists($category->image)) {
             Storage::disk('public')->delete($category->image);
         }
 
-        
         $category->delete();
 
         return redirect()->route('allcategory.index')
-            ->with('success','Category and Image Deleted Successfully!');
+            ->with('success', 'Category and Image Deleted Successfully!');
     }
 }

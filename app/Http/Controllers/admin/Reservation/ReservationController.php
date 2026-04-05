@@ -16,23 +16,21 @@ class ReservationController extends Controller
             $query->where('user_id', $user->id);
         }
 
-        $reservations = $query->latest()->paginate(10);
+        $reservations = $query->latest()->paginate(5); // changed 10 → 5
         return view('Admin.Reservations.table-list', compact('reservations'));
     }
-
 
     public function create() {
         return view('Admin.Reservations.table-form');
     }
 
-
     public function store(Request $request) {
         $validated = $request->validate([
-            'full_name' => 'required|string|max:255',
+            'full_name'    => 'required|string|max:255',
             'phone_number' => 'required|string|max:20',
-            'date' => 'required|date',
-            'time' => 'required',
-            'table_id' => 'required|integer',
+            'date'         => 'required|date',
+            'time'         => 'required',
+            'table_id'     => 'required|integer',
         ]);
 
         $validated['user_id'] = auth()->id();
@@ -41,34 +39,36 @@ class ReservationController extends Controller
 
         return redirect()->route('reservations.index')->with('success', 'Table reserved successfully!');
     }
-    
+
     public function edit($id) {
         $reservation = Reservation::findOrFail($id);
         return view('Admin.Reservations.table-form', compact('reservation'));
     }
-    
+
     public function update(Request $request, $id) {
         $reservation = Reservation::findOrFail($id);
 
         $validated = $request->validate([
-            'full_name' => 'required|string|max:255',
+            'full_name'    => 'required|string|max:255',
             'phone_number' => 'required|string|max:20',
-            'date' => 'required|date',
-            'time' => 'required',
-            'table_id' => 'required|integer',
+            'date'         => 'required|date',
+            'time'         => 'required',
+            'table_id'     => 'required|integer',
         ]);
+
         $reservation->update($validated);
+
         return redirect()->route('reservations.index')
                          ->with('success', 'Table updated successfully');
     }
-    
+
     public function destroy($id) {
         $reservation = Reservation::findOrFail($id);
         $reservation->delete();
         return redirect()->route('reservations.index')->with('success', 'Table deleted!');
     }
-    
-    public function search(Request $request){
+
+    public function search(Request $request) {
         $query = $request->input('query');
         $user = auth()->user();
 
@@ -82,9 +82,9 @@ class ReservationController extends Controller
 
         $reservations = $reservationsQuery
             ->latest()
-            ->paginate(10)
-            ->withQueryString(); 
+            ->paginate(5)
+            ->withQueryString();
 
         return view('Admin.Reservations.table-list', compact('reservations', 'query'));
     }
-}   
+}

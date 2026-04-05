@@ -17,7 +17,7 @@ class UserController extends Controller
                 $q->where('username', 'like', '%' . $request->search . '%')
             )
             ->orderByDesc('created_at')
-            ->paginate(10)
+            ->paginate(5)
             ->withQueryString();
 
         return view('Admin.Users.user-list', compact('users'));

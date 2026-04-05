@@ -22,7 +22,7 @@ class ProductController extends Controller
                   });
             });
         }
-        $products = $query->latest()->paginate(10)->withQueryString();
+        $products = $query->latest()->paginate(5)->withQueryString();
         return view('Admin.Products.product-list', compact('products'));
     }
 
@@ -49,7 +49,7 @@ class ProductController extends Controller
 
         if ($request->hasFile('images')) {
             $path = $request->file('images')->store('products', 'public');
-            $data['images'] = [$path]; 
+            $data['images'] = [$path];
         }
 
         Product::create($data);
@@ -80,25 +80,23 @@ class ProductController extends Controller
         $data = $request->only(['name','qty','price','cost','count','description','category_id']);
 
         if ($request->hasFile('images')) {
-            
             if ($product->images && is_array($product->images)) {
-                foreach($product->images as $oldImg) {
+                foreach ($product->images as $oldImg) {
                     Storage::disk('public')->delete($oldImg);
                 }
             }
             $path = $request->file('images')->store('products', 'public');
-            $data['images'] = [$path]; 
+            $data['images'] = [$path];
         }
 
         $product->update($data);
         return redirect()->route('allproduct.index')->with('success', 'Product Updated Successfully!');
-        
-        }
+    }
+
     public function destroy($id)
     {
         $product = Product::findOrFail($id);
 
-        
         if ($product->images && is_array($product->images)) {
             foreach ($product->images as $img) {
                 if (Storage::disk('public')->exists($img)) {

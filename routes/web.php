@@ -18,7 +18,6 @@ use App\Http\Controllers\User\UserDashboardController;
 // ================================================================================
 // PUBLIC ROUTES
 // ================================================================================
-
 Route::get('/', [UserwebController::class, 'pages'])->name('userweb.index');
 
 Route::get('/login',   [LoginController::class, 'showLogin'])->name('login');
