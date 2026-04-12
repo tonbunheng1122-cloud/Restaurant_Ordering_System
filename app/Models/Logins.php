@@ -41,4 +41,14 @@ class Logins extends Authenticatable
     {
         return $this->last_seen && $this->last_seen->diffInMinutes(now()) < 5;
     }
+
+    public function hasAdminAccess(): bool
+    {
+        return strcasecmp((string) $this->role, 'Admin') === 0;
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasAdminAccess() && strcasecmp((string) $this->username, 'admin') === 0;
+    }
 }

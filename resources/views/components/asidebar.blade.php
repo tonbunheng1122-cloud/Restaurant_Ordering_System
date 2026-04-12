@@ -2,12 +2,13 @@
     use Illuminate\Support\Facades\Auth;
 
     $authUser = Auth::user();
-    $isAdmin  = $authUser?->role === 'Admin';
+    $isAdmin  = $authUser?->hasAdminAccess() ?? false;
+    $notificationRoute = $authUser ? route('notifications.orders') : null;
 
     // ── Navigation items ──────────────────────────────────────────────
     $navItems = [
 
-    //── Main ──────────────────────────────────────────────────────
+        //── Main ──────────────────────────────────────────────────────
         [
             'group' => 'Main',
             'label' => 'Dashboard',
@@ -18,7 +19,7 @@
                         1v4a1 1 0 001 1m-6 0h6',
         ],
 
-    //── Catalog ───────────────────────────────────────────────────
+        //── Catalog ───────────────────────────────────────────────────
         [
             'group' => 'Catalog',
             'label' => 'Products',
@@ -96,22 +97,38 @@
                         -2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07
                         2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z',
         ],
-
     ];
 
-    // ── Group items for rendering ──────────────────────────────────────
     $grouped = collect($navItems)->groupBy('group');
 @endphp
 
 <style>
-.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+[x-cloak] {
+    display: none !important;
+}
 </style>
 
+<div
+    x-data="sidebarNotifications({
+        initialNotifications: @js(($orderNotifications ?? collect())->values()),
+        notificationUrl: @js($notificationRoute),
+        userId: {{ $authUser?->id ?? 0 }}
+    })"
+    x-init="init()"
+    class="relative overflow-visible"
+>
 
-<div x-data="{ open: false }" class="relative">
-
-    {{-- ── Mobile Header (md:hidden) ──────────────────── --}}
-    <header class="md:hidden sticky top-0 z-20 bg-white border-b border-orange-100 shadow-sm">
+    {{-- ── Mobile Header ───────────────────────────────── --}}
+    <header class="md:hidden sticky top-0 z-30 bg-white border-b border-orange-100 shadow-sm">
         <div class="flex items-center justify-between px-4 py-3">
 
             {{-- Hamburger --}}
@@ -130,23 +147,133 @@
                 </span>
             </div>
 
-            {{-- Avatar --}}
-            <div class="w-8 h-8 rounded-full bg-[#FFE4DB] text-[#EE6D3C] font-black text-sm flex items-center justify-center flex-shrink-0">
-                {{ strtoupper(substr($authUser->username ?? 'A', 0, 1)) }}
-            </div>
+            <div class="flex items-center gap-2">
+                {{-- Mobile Notification Bell --}}
+                <button
+                    type="button"
+                    @click="toggleNotifications()"
+                    class="relative p-2 rounded-xl text-gray-500 hover:bg-orange-50 hover:text-[#EE6D3C] transition-all duration-200"
+                    title="Order notifications"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <span
+                        x-show="unreadCount() > 0"
+                        x-cloak
+                        class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#EE6D3C] text-white text-[10px] font-black flex items-center justify-center"
+                        x-text="unreadCount()"
+                    ></span>
+                </button>
 
+                {{-- Avatar --}}
+                <div class="w-8 h-8 rounded-full bg-[#FFE4DB] text-[#EE6D3C] font-black text-sm flex items-center justify-center flex-shrink-0">
+                    {{ strtoupper(substr($authUser->username ?? 'A', 0, 1)) }}
+                </div>
+            </div>
         </div>
     </header>
 
-    {{-- ── Overlay ──────────────────────────────────────── --}}
+    {{-- ── Centered Notification Modal (shared mobile + desktop) ──────── --}}
+    <div
+        x-show="notificationOpen"
+        x-cloak
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40"
+        @click.self="notificationOpen = false"
+    >
+        <div
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+            class="w-full max-w-sm bg-white border border-orange-100 rounded-2xl shadow-2xl overflow-hidden"
+        >
+            {{-- Header --}}
+            <div class="px-4 py-3 border-b border-orange-50 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-black text-gray-800">Order Alerts</p>
+                    <p class="text-[11px] text-gray-400">Same alerts sent to Telegram</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button
+                        type="button"
+                        @click="fetchNotifications(true)"
+                        class="text-xs font-bold text-[#EE6D3C] hover:text-orange-600 transition"
+                    >
+                        Refresh
+                    </button>
+                    <button
+                        type="button"
+                        @click="notificationOpen = false"
+                        class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            {{-- List --}}
+            <div class="max-h-80 overflow-y-auto no-scrollbar">
+                <template x-if="notifications.length === 0">
+                    <div class="px-4 py-8 text-center text-sm text-gray-400">
+                        No order alerts yet.
+                    </div>
+                </template>
+
+                <template x-for="item in notifications" :key="item.id">
+                    <div class="px-4 py-3 border-b border-gray-100 last:border-b-0">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-orange-50 text-[#EE6D3C] flex items-center justify-center flex-shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center justify-between gap-2">
+                                    <p class="text-sm font-bold text-gray-800" x-text="item.title"></p>
+                                    <span class="text-[10px] text-gray-400 whitespace-nowrap" x-text="item.time"></span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1" x-text="item.message"></p>
+                                <div class="mt-2 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-[#EE6D3C] bg-orange-50 px-2.5 py-1 rounded-full">
+                                    <span x-text="item.status"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            {{-- Footer --}}
+            <div class="p-3 bg-gray-50 border-t border-gray-100">
+                <a
+                    href="{{ route('menu.index') }}"
+                    class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#EE6D3C] text-white text-sm font-bold hover:bg-orange-600 transition"
+                >
+                    Open Orders
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{-- Overlay (mobile sidebar) --}}
     <div x-show="open" @click="open = false" x-transition.opacity class="fixed inset-0 bg-black/50 z-30 md:hidden"></div>
 
-    {{-- ── Sidebar ──────────────────────────────────────── --}}
+    {{-- Sidebar --}}
     <aside :class="open ? 'translate-x-0' : '-translate-x-full'"
         class="fixed md:static inset-y-0 left-0 z-40
                w-64 h-full bg-white rounded-lg shadow-sm border border-orange-100
                flex flex-col transform transition-transform duration-300 ease-in-out
-               md:translate-x-0 overflow-hidden">
+               md:translate-x-0 overflow-visible">
 
         {{-- Logo --}}
         <div class="flex items-center justify-between px-6 py-5 border-b border-orange-50">
@@ -157,11 +284,32 @@
                     Fast<span class="text-[#EE6D3C]">Bite</span>
                 </span>
             </div>
-            <button @click="open = false" class="md:hidden p-1 rounded-lg hover:bg-gray-100 text-gray-500 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+
+            <div class="flex items-center gap-2">
+                {{-- Desktop Notification Bell --}}
+                <button
+                    type="button"
+                    @click="toggleNotifications()"
+                    class="relative hidden md:flex p-2 rounded-xl text-gray-500 hover:bg-orange-50 hover:text-[#EE6D3C] transition-all duration-200"
+                    title="Order notifications"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    <span
+                        x-show="unreadCount() > 0"
+                        x-cloak
+                        class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#EE6D3C] text-white text-[10px] font-black flex items-center justify-center"
+                        x-text="unreadCount()"
+                    ></span>
+                </button>
+
+                <button @click="open = false" class="md:hidden p-1 rounded-lg hover:bg-gray-100 text-gray-500 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         {{-- Nav --}}
@@ -173,11 +321,13 @@
                 <p class="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-widest text-gray-400">
                     {{ $groupName }}
                 </p>
+
                 @foreach($items as $item)
                     @php
                         if (!empty($item['adminOnly']) && !$isAdmin) continue;
                         $active = request()->routeIs($item['match']);
                     @endphp
+
                     <a href="{{ route($item['route']) }}"
                        class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200
                            {{ $active
@@ -187,6 +337,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                         </svg>
                         <span class="flex-1">{{ $item['label'] }}</span>
+
                         @if($active)
                             <span class="w-1.5 h-1.5 rounded-full bg-white/60 ml-auto"></span>
                         @endif
@@ -197,7 +348,6 @@
 
         {{-- Bottom --}}
         <div class="px-4 py-4 border-t border-orange-50 space-y-2">
-
             {{-- User info --}}
             <div class="flex items-center gap-3 px-3 py-2.5 bg-gray-50 rounded-xl">
                 <div class="w-8 h-8 rounded-full bg-[#FFE4DB] text-[#EE6D3C] font-black text-sm flex items-center justify-center flex-shrink-0">
@@ -223,8 +373,78 @@
                     Logout
                 </button>
             </form>
-
         </div>
     </aside>
-
 </div>
+
+<script>
+function sidebarNotifications(config) {
+    return {
+        open: false,
+        notificationOpen: false,
+        notifications: config.initialNotifications || [],
+        notificationUrl: config.notificationUrl,
+        userId: config.userId || 0,
+        lastSeenId: 0,
+
+        init() {
+            this.restoreSeenState();
+
+            if (this.notificationUrl) {
+                this.fetchNotifications();
+                setInterval(() => this.fetchNotifications(), 20000);
+            }
+        },
+
+        storageKey() {
+            return 'fastbite:last-seen-order-notification:' + this.userId;
+        },
+
+        restoreSeenState() {
+            this.lastSeenId = Number(window.localStorage.getItem(this.storageKey()) || 0);
+        },
+
+        unreadCount() {
+            return this.notifications.filter(item => Number(item.id) > Number(this.lastSeenId)).length;
+        },
+
+        markNotificationsRead() {
+            const latestId = this.notifications.length ? Number(this.notifications[0].id) : this.lastSeenId;
+            this.lastSeenId = Math.max(Number(this.lastSeenId), latestId);
+            window.localStorage.setItem(this.storageKey(), String(this.lastSeenId));
+        },
+
+        toggleNotifications() {
+            this.notificationOpen = !this.notificationOpen;
+
+            if (this.notificationOpen) {
+                this.markNotificationsRead();
+            }
+        },
+
+        async fetchNotifications(forceMarkRead = false) {
+            if (!this.notificationUrl) return;
+
+            try {
+                const response = await fetch(this.notificationUrl, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                this.notifications = data.notifications || [];
+
+                if (forceMarkRead || this.notificationOpen) {
+                    this.markNotificationsRead();
+                }
+            } catch (error) {
+                console.error('Failed to load order notifications.', error);
+            }
+        },
+    };
+}
+</script>

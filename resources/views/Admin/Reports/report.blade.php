@@ -62,63 +62,158 @@ body { font-family: 'Inter', sans-serif; }
 
 <title>FastBite | Reports</title>
 
+@php
+$reservationsJson = $reservations->map(fn($r) => [
+    'id'    => $r->id,
+    'name'  => $r->full_name,
+    'date'  => $r->date,
+    'time'  => $r->time,
+    'phone' => $r->phone_number,
+    'table' => $r->table_id,
+]);
+
+$ordersJson = $orders->map(fn($o) => [
+    'id'        => $o->id,
+    'status'    => $o->status,
+    'total'     => (float)($o->total_amount ?? 0),
+    'date'      => \Carbon\Carbon::parse($o->created_at)->format('d M Y'),
+    'time'      => \Carbon\Carbon::parse($o->created_at)->format('h:i A'),
+    'items'     => $o->items && $o->items->count()
+                    ? $o->items->map(fn($i) => ($i->name ?? $i->product?->name ?? 'Unknown') . ' ×' . $i->quantity)->join(', ')
+                    : '',
+    'itemCount' => $o->items ? $o->items->count() : 0,
+]);
+
+$productsJson = $products->map(fn($p) => [
+    'id'          => $p->id,
+    'name'        => $p->name,
+    'description' => $p->description ?? '',
+    'category'    => $p->category?->name ?? 'Uncategorized',
+    'price'       => (float)$p->price,
+    'cost'        => (float)($p->cost ?? 0),
+    'qty'         => (int)($p->qty ?? 0),
+]);
+
+$categoriesJson = $categories->map(fn($c) => [
+    'id'         => $c->id,
+    'name'       => $c->name,
+    'count'      => $c->products_count,
+    'created_at' => \Carbon\Carbon::parse($c->created_at)->format('d M Y'),
+]);
+
+$salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
+    'id'      => $s->id,
+    'date'    => \Carbon\Carbon::parse($s->created_at)->format('d M Y'),
+    'time'    => \Carbon\Carbon::parse($s->created_at)->format('h:i A'),
+    'dateKey' => \Carbon\Carbon::parse($s->created_at)->toDateString(),
+    'total'   => (float)($s->total_amount ?? 0),
+])->values();
+@endphp
+
 <div class="bg-[#FFE4DB] min-h-screen" x-data="{
     activeTab: 'reservations',
 
-    resSearch: '',
-    selectedTable: 'All',
-    matchReservation(text, table) {
-        let s = this.resSearch === '' || text.toLowerCase().includes(this.resSearch.toLowerCase());
-        let t = this.selectedTable === 'All' || this.selectedTable == table;
-        return s && t;
-    },
+    /* ── Data ── */
+    reservations: {{ Js::from($reservationsJson) }},
+    allOrders:    {{ Js::from($ordersJson) }},
+    allProducts:  {{ Js::from($productsJson) }},
+    allCategories:{{ Js::from($categoriesJson) }},
+    allSales:     {{ Js::from($salesJson) }},
 
-    orderSearch: '',
-    selectedStatus: 'All',
-    matchOrder(text, status) {
-        let s = this.orderSearch === '' || text.toLowerCase().includes(this.orderSearch.toLowerCase());
-        let st = this.selectedStatus === 'All' || this.selectedStatus === status;
-        return s && st;
+    /* ── Reservations ── */
+    resSearch: '', selectedTable: 'All',
+    resPage: 1, resPerPage: 10,
+    get filteredReservations() {
+        return this.reservations.filter(r => {
+            let s = !this.resSearch || (r.name + ' ' + r.phone + ' Table ' + r.table).toLowerCase().includes(this.resSearch.toLowerCase());
+            let t = this.selectedTable === 'All' || this.selectedTable == r.table;
+            return s && t;
+        });
     },
-
-    productSearch: '',
-    selectedCategory: 'All',
-    matchProduct(text, category) {
-        let s = this.productSearch === '' || text.toLowerCase().includes(this.productSearch.toLowerCase());
-        let c = this.selectedCategory === 'All' || this.selectedCategory === category;
-        return s && c;
+    get pagedReservations() {
+        const s = (this.resPage - 1) * this.resPerPage;
+        return this.filteredReservations.slice(s, s + this.resPerPage);
     },
+    get resTotalPages() { return Math.max(1, Math.ceil(this.filteredReservations.length / this.resPerPage)); },
+    get resPageNums()   { return Array.from({ length: this.resTotalPages }, (_, i) => i + 1); },
 
+    /* ── Orders ── */
+    orderSearch: '', selectedStatus: 'All',
+    orderPage: 1, orderPerPage: 10,
+    get filteredOrders() {
+        return this.allOrders.filter(o => {
+            let s = !this.orderSearch || ('#' + o.id + ' ' + o.status + ' ' + o.items).toLowerCase().includes(this.orderSearch.toLowerCase());
+            let st = this.selectedStatus === 'All' || this.selectedStatus === o.status;
+            return s && st;
+        });
+    },
+    get pagedOrders() {
+        const s = (this.orderPage - 1) * this.orderPerPage;
+        return this.filteredOrders.slice(s, s + this.orderPerPage);
+    },
+    get orderTotalPages() { return Math.max(1, Math.ceil(this.filteredOrders.length / this.orderPerPage)); },
+    get orderPageNums()   { return Array.from({ length: this.orderTotalPages }, (_, i) => i + 1); },
+
+    /* ── Products ── */
+    productSearch: '', selectedCategory: 'All',
+    productPage: 1, productPerPage: 10,
+    get filteredProducts() {
+        return this.allProducts.filter(p => {
+            let s = !this.productSearch || (p.name + ' ' + p.category).toLowerCase().includes(this.productSearch.toLowerCase());
+            let c = this.selectedCategory === 'All' || this.selectedCategory === p.category;
+            return s && c;
+        });
+    },
+    get pagedProducts() {
+        const s = (this.productPage - 1) * this.productPerPage;
+        return this.filteredProducts.slice(s, s + this.productPerPage);
+    },
+    get productTotalPages() { return Math.max(1, Math.ceil(this.filteredProducts.length / this.productPerPage)); },
+    get productPageNums()   { return Array.from({ length: this.productTotalPages }, (_, i) => i + 1); },
+
+    /* ── Categories ── */
     categorySearch: '',
-    matchCategory(text) {
-        return this.categorySearch === '' || text.toLowerCase().includes(this.categorySearch.toLowerCase());
+    catPage: 1, catPerPage: 10,
+    get filteredCategories() {
+        return this.allCategories.filter(c => !this.categorySearch || c.name.toLowerCase().includes(this.categorySearch.toLowerCase()));
     },
-
-    saleSearch: '',
-    selectedSaleDate: 'All',
-    matchSale(text, date) {
-        let s = this.saleSearch === '' || text.toLowerCase().includes(this.saleSearch.toLowerCase());
-        let d = this.selectedSaleDate === 'All' || this.selectedSaleDate === date;
-        return s && d;
+    get pagedCategories() {
+        const s = (this.catPage - 1) * this.catPerPage;
+        return this.filteredCategories.slice(s, s + this.catPerPage);
     },
+    get catTotalPages() { return Math.max(1, Math.ceil(this.filteredCategories.length / this.catPerPage)); },
+    get catPageNums()   { return Array.from({ length: this.catTotalPages }, (_, i) => i + 1); },
 
-    exportModal: false,
-    exportFormat: '',
-    exportLabel: '',
-    exportColorClass: '',
+    /* ── Sales ── */
+    saleSearch: '', selectedSaleDate: 'All',
+    salePage: 1, salePerPage: 10,
+    get filteredSales() {
+        return this.allSales.filter(s => {
+            let m = !this.saleSearch || ('#' + s.id).toLowerCase().includes(this.saleSearch.toLowerCase());
+            let d = this.selectedSaleDate === 'All' || this.selectedSaleDate === s.dateKey;
+            return m && d;
+        });
+    },
+    get pagedSales() {
+        const s = (this.salePage - 1) * this.salePerPage;
+        return this.filteredSales.slice(s, s + this.salePerPage);
+    },
+    get saleTotalPages() { return Math.max(1, Math.ceil(this.filteredSales.length / this.salePerPage)); },
+    get salePageNums()   { return Array.from({ length: this.saleTotalPages }, (_, i) => i + 1); },
 
+    /* ── Export / Toast ── */
+    exportModal: false, exportFormat: '', exportLabel: '', exportColorClass: '',
     openExport(format) {
         const map = {
             excel: { label: 'Excel (.xlsx)', color: 'bg-emerald-600' },
-            pdf:   { label: 'PDF document', color: 'bg-red-600'     },
-            print: { label: 'Print preview', color: 'bg-gray-900'   },
+            pdf:   { label: 'PDF document',  color: 'bg-red-600'     },
+            print: { label: 'Print preview', color: 'bg-gray-900'    },
         };
         this.exportFormat     = format;
         this.exportLabel      = map[format].label;
         this.exportColorClass = map[format].color;
         this.exportModal      = true;
     },
-
     confirmExport() {
         this.exportModal = false;
         if (this.exportFormat === 'print') {
@@ -128,13 +223,25 @@ body { font-family: 'Inter', sans-serif; }
         }
         this.showToast(this.exportLabel);
     },
-
     toastMsg: '',
     showToast(label) {
         this.toastMsg = label + ' export started';
         const el = document.getElementById('toast');
         el.classList.add('show');
         setTimeout(() => el.classList.remove('show'), 3200);
+    },
+
+    /* ── Reset pages on filter change ── */
+    init() {
+        this.$watch('resSearch',        () => this.resPage      = 1);
+        this.$watch('selectedTable',    () => this.resPage      = 1);
+        this.$watch('orderSearch',      () => this.orderPage    = 1);
+        this.$watch('selectedStatus',   () => this.orderPage    = 1);
+        this.$watch('productSearch',    () => this.productPage  = 1);
+        this.$watch('selectedCategory', () => this.productPage  = 1);
+        this.$watch('categorySearch',   () => this.catPage      = 1);
+        this.$watch('saleSearch',       () => this.salePage     = 1);
+        this.$watch('selectedSaleDate', () => this.salePage     = 1);
     }
 }">
 
@@ -259,25 +366,43 @@ body { font-family: 'Inter', sans-serif; }
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
-                                @forelse($reservations as $res)
-                                    <tr class="hover:bg-orange-50/40 transition"
-                                        x-show="matchReservation('{{ $res->full_name }} {{ $res->phone_number }} Table {{ $res->table_id }}', '{{ $res->table_id }}')">
-                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono">#{{ $res->id }}</td>
-                                        <td class="px-4 py-3 font-medium text-gray-800">{{ $res->full_name }}</td>
+                                <template x-if="filteredReservations.length === 0">
+                                    <tr><td colspan="5" class="p-10 text-center text-gray-400 italic text-sm">No reservation data found</td></tr>
+                                </template>
+                                <template x-for="res in pagedReservations" :key="res.id">
+                                    <tr class="hover:bg-orange-50/40 transition">
+                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono" x-text="'#' + res.id"></td>
+                                        <td class="px-4 py-3 font-medium text-gray-800" x-text="res.name"></td>
                                         <td class="px-4 py-3 hidden md:table-cell">
-                                            <span class="text-gray-700">{{ $res->date }}</span>
-                                            <span class="ml-1 text-xs text-gray-400">{{ $res->time }}</span>
+                                            <span class="text-gray-700" x-text="res.date"></span>
+                                            <span class="ml-1 text-xs text-gray-400" x-text="res.time"></span>
                                         </td>
-                                        <td class="px-4 py-3 hidden md:table-cell text-gray-500 text-sm">{{ $res->phone_number }}</td>
+                                        <td class="px-4 py-3 hidden md:table-cell text-gray-500 text-sm" x-text="res.phone"></td>
                                         <td class="px-4 py-3 hidden lg:table-cell">
-                                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">Table {{ $res->table_id }}</span>
+                                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold" x-text="'Table ' + res.table"></span>
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr><td colspan="5" class="p-10 text-center text-gray-400 italic text-sm">No reservation data found</td></tr>
-                                @endforelse
+                                </template>
                             </tbody>
                         </table>
+                    </div>
+                    {{-- Reservations Pagination --}}
+                    <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
+                        <p class="text-xs text-gray-400"
+                            x-text="filteredReservations.length
+                                ? 'Showing ' + ((resPage-1)*resPerPage+1) + '–' + Math.min(resPage*resPerPage, filteredReservations.length) + ' of ' + filteredReservations.length + ' entries'
+                                : ''"></p>
+                        <div x-show="resTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
+                            <button @click="resPage--" :disabled="resPage === 1"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                            <template x-for="p in resPageNums" :key="p">
+                                <button @click="resPage = p"
+                                    :class="resPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
+                            </template>
+                            <button @click="resPage++" :disabled="resPage === resTotalPages"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                        </div>
                     </div>
                 </div>
 
@@ -310,43 +435,62 @@ body { font-family: 'Inter', sans-serif; }
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
-                                @forelse($orders as $order)
-                                    <tr class="hover:bg-orange-50/40 transition"
-                                        x-show="matchOrder('#{{ $order->id }} {{ $order->status }}', '{{ $order->status }}')">
-                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono">#{{ $order->id }}</td>
+                                <template x-if="filteredOrders.length === 0">
+                                    <tr><td colspan="5" class="p-10 text-center text-gray-400 italic text-sm">No order data found</td></tr>
+                                </template>
+                                <template x-for="order in pagedOrders" :key="order.id">
+                                    <tr class="hover:bg-orange-50/40 transition">
+                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono" x-text="'#' + order.id"></td>
                                         <td class="px-4 py-3">
-                                            @if($order->items && $order->items->count())
-                                                <div class="text-sm font-medium text-gray-800">
-                                                    {{ $order->items->map(fn($i) => ($i->name ?? $i->product?->name ?? 'Unknown') . ' ×' . $i->quantity)->join(', ') }}
+                                            <template x-if="order.items">
+                                                <div>
+                                                    <div class="text-sm font-medium text-gray-800" x-text="order.items"></div>
+                                                    <div class="text-xs text-gray-400 mt-0.5" x-text="order.itemCount + (order.itemCount === 1 ? ' item' : ' items')"></div>
                                                 </div>
-                                                <div class="text-xs text-gray-400 mt-0.5">{{ $order->items->count() }} {{ Str::plural('item', $order->items->count()) }}</div>
-                                            @else
+                                            </template>
+                                            <template x-if="!order.items">
                                                 <span class="text-gray-400 text-xs italic">No items</span>
-                                            @endif
+                                            </template>
                                         </td>
                                         <td class="px-4 py-3 hidden md:table-cell text-gray-600 text-sm">
-                                            {{ \Carbon\Carbon::parse($order->created_at)->format('d M Y') }}
-                                            <div class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($order->created_at)->format('h:i A') }}</div>
+                                            <span x-text="order.date"></span>
+                                            <div class="text-xs text-gray-400" x-text="order.time"></div>
                                         </td>
-                                        <td class="px-4 py-3 hidden md:table-cell font-semibold text-gray-800">${{ number_format($order->total_amount ?? 0, 2) }}</td>
+                                        <td class="px-4 py-3 hidden md:table-cell font-semibold text-gray-800"
+                                            x-text="'$' + order.total.toFixed(2)"></td>
                                         <td class="px-4 py-3">
-                                            @php
-                                                $sc = [
-                                                    'pending'   => 'bg-yellow-100 text-yellow-700',
-                                                    'confirmed' => 'bg-blue-100 text-blue-700',
-                                                    'completed' => 'bg-green-100 text-green-700',
-                                                    'cancelled' => 'bg-red-100 text-red-700',
-                                                ];
-                                                $c = $sc[strtolower($order->status)] ?? 'bg-gray-100 text-gray-700';
-                                            @endphp
-                                            <span class="px-3 py-1 rounded-full text-xs font-bold {{ $c }}">{{ ucfirst($order->status) }}</span>
+                                            <span class="px-3 py-1 rounded-full text-xs font-bold"
+                                                :class="{
+                                                    'bg-yellow-100 text-yellow-700': order.status === 'pending',
+                                                    'bg-blue-100 text-blue-700':    order.status === 'confirmed',
+                                                    'bg-green-100 text-green-700':  order.status === 'completed',
+                                                    'bg-red-100 text-red-700':      order.status === 'cancelled',
+                                                    'bg-gray-100 text-gray-700':    !['pending','confirmed','completed','cancelled'].includes(order.status)
+                                                }"
+                                                x-text="order.status.charAt(0).toUpperCase() + order.status.slice(1)"></span>
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr><td colspan="5" class="p-10 text-center text-gray-400 italic text-sm">No order data found</td></tr>
-                                @endforelse
+                                </template>
                             </tbody>
                         </table>
+                    </div>
+                    {{-- Orders Pagination --}}
+                    <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
+                        <p class="text-xs text-gray-400"
+                            x-text="filteredOrders.length
+                                ? 'Showing ' + ((orderPage-1)*orderPerPage+1) + '–' + Math.min(orderPage*orderPerPage, filteredOrders.length) + ' of ' + filteredOrders.length + ' entries'
+                                : ''"></p>
+                        <div x-show="orderTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
+                            <button @click="orderPage--" :disabled="orderPage === 1"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                            <template x-for="p in orderPageNums" :key="p">
+                                <button @click="orderPage = p"
+                                    :class="orderPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
+                            </template>
+                            <button @click="orderPage++" :disabled="orderPage === orderTotalPages"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                        </div>
                     </div>
                 </div>
 
@@ -380,33 +524,48 @@ body { font-family: 'Inter', sans-serif; }
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
-                                @forelse($products as $product)
-                                    <tr class="hover:bg-orange-50/40 transition"
-                                        x-show="matchProduct('{{ $product->name }} {{ $product->category?->name }}', '{{ $product->category?->name }}')">
-                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono">#{{ $product->id }}</td>
+                                <template x-if="filteredProducts.length === 0">
+                                    <tr><td colspan="6" class="p-10 text-center text-gray-400 italic text-sm">No product data found</td></tr>
+                                </template>
+                                <template x-for="product in pagedProducts" :key="product.id">
+                                    <tr class="hover:bg-orange-50/40 transition">
+                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono" x-text="'#' + product.id"></td>
                                         <td class="px-4 py-3">
-                                            <div class="font-medium text-gray-800">{{ $product->name }}</div>
-                                            @if($product->description)
-                                                <div class="text-xs text-gray-400 mt-0.5 line-clamp-1">{{ $product->description }}</div>
-                                            @endif
+                                            <div class="font-medium text-gray-800" x-text="product.name"></div>
+                                            <div x-show="product.description" class="text-xs text-gray-400 mt-0.5 line-clamp-1" x-text="product.description"></div>
                                         </td>
                                         <td class="px-4 py-3 hidden md:table-cell">
-                                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">{{ $product->category?->name ?? 'Uncategorized' }}</span>
+                                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold" x-text="product.category"></span>
                                         </td>
-                                        <td class="px-4 py-3 hidden md:table-cell font-semibold text-gray-800">${{ number_format($product->price, 2) }}</td>
-                                        <td class="px-4 py-3 hidden lg:table-cell text-gray-500">${{ number_format($product->cost ?? 0, 2) }}</td>
+                                        <td class="px-4 py-3 hidden md:table-cell font-semibold text-gray-800" x-text="'$' + product.price.toFixed(2)"></td>
+                                        <td class="px-4 py-3 hidden lg:table-cell text-gray-500" x-text="'$' + product.cost.toFixed(2)"></td>
                                         <td class="px-4 py-3 hidden lg:table-cell">
-                                            @php $qty = $product->qty ?? 0; @endphp
-                                            <span class="px-2 py-0.5 rounded-lg text-xs font-bold {{ $qty > 10 ? 'bg-green-100 text-green-700' : ($qty > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
-                                                {{ $product->qty ?? 'N/A' }}
-                                            </span>
+                                            <span class="px-2 py-0.5 rounded-lg text-xs font-bold"
+                                                :class="product.qty > 10 ? 'bg-green-100 text-green-700' : (product.qty > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700')"
+                                                x-text="product.qty"></span>
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr><td colspan="6" class="p-10 text-center text-gray-400 italic text-sm">No product data found</td></tr>
-                                @endforelse
+                                </template>
                             </tbody>
                         </table>
+                    </div>
+                    {{-- Products Pagination --}}
+                    <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
+                        <p class="text-xs text-gray-400"
+                            x-text="filteredProducts.length
+                                ? 'Showing ' + ((productPage-1)*productPerPage+1) + '–' + Math.min(productPage*productPerPage, filteredProducts.length) + ' of ' + filteredProducts.length + ' entries'
+                                : ''"></p>
+                        <div x-show="productTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
+                            <button @click="productPage--" :disabled="productPage === 1"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                            <template x-for="p in productPageNums" :key="p">
+                                <button @click="productPage = p"
+                                    :class="productPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
+                            </template>
+                            <button @click="productPage++" :disabled="productPage === productTotalPages"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                        </div>
                     </div>
                 </div>
 
@@ -427,28 +586,44 @@ body { font-family: 'Inter', sans-serif; }
                                 <tr class="border-b text-gray-500 uppercase text-xs">
                                     <th class="px-4 py-3">ID</th>
                                     <th class="px-4 py-3">Category Name</th>
-                                    <th class="px-4 py-3 hidden md:table-cell">Code</th>
                                     <th class="px-4 py-3 hidden md:table-cell">Total Products</th>
                                     <th class="px-4 py-3 hidden lg:table-cell">Created At</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
-                                @forelse($categories as $cat)
-                                    <tr class="hover:bg-orange-50/40 transition"
-                                        x-show="matchCategory('{{ $cat->name }}')">
-                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono">#{{ $cat->id }}</td>
-                                        <td class="px-4 py-3 font-medium text-gray-800">{{ $cat->name }}</td>
-                                        <td class="px-4 py-3 hidden md:table-cell text-gray-500 text-xs font-mono">{{ $cat->code ?? '—' }}</td>
+                                <template x-if="filteredCategories.length === 0">
+                                    <tr><td colspan="4" class="p-10 text-center text-gray-400 italic text-sm">No category data found</td></tr>
+                                </template>
+                                <template x-for="cat in pagedCategories" :key="cat.id">
+                                    <tr class="hover:bg-orange-50/40 transition">
+                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono" x-text="'#' + cat.id"></td>
+                                        <td class="px-4 py-3 font-medium text-gray-800" x-text="cat.name"></td>
                                         <td class="px-4 py-3 hidden md:table-cell">
-                                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">{{ $cat->products_count }} items</span>
+                                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold" x-text="cat.count + ' items'"></span>
                                         </td>
-                                        <td class="px-4 py-3 hidden lg:table-cell text-gray-400 text-xs">{{ \Carbon\Carbon::parse($cat->created_at)->format('d M Y') }}</td>
+                                        <td class="px-4 py-3 hidden lg:table-cell text-gray-400 text-xs" x-text="cat.created_at"></td>
                                     </tr>
-                                @empty
-                                    <tr><td colspan="5" class="p-10 text-center text-gray-400 italic text-sm">No category data found</td></tr>
-                                @endforelse
+                                </template>
                             </tbody>
                         </table>
+                    </div>
+                    {{-- Categories Pagination --}}
+                    <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
+                        <p class="text-xs text-gray-400"
+                            x-text="filteredCategories.length
+                                ? 'Showing ' + ((catPage-1)*catPerPage+1) + '–' + Math.min(catPage*catPerPage, filteredCategories.length) + ' of ' + filteredCategories.length + ' entries'
+                                : ''"></p>
+                        <div x-show="catTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
+                            <button @click="catPage--" :disabled="catPage === 1"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                            <template x-for="p in catPageNums" :key="p">
+                                <button @click="catPage = p"
+                                    :class="catPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
+                            </template>
+                            <button @click="catPage++" :disabled="catPage === catTotalPages"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                        </div>
                     </div>
                 </div>
 
@@ -474,9 +649,7 @@ body { font-family: 'Inter', sans-serif; }
                             <p class="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-1">{{ now()->format('M Y') }}</p>
                             <p class="text-2xl font-black text-gray-900">${{ number_format($monthlySalesTotal, 2) }}</p>
                             <div class="flex items-center gap-1.5 mt-2">
-                                <span class="inline-flex items-center gap-1 bg-blue-500/10 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                    {{ $monthlyCount }} orders
-                                </span>
+                                <span class="inline-flex items-center gap-1 bg-blue-500/10 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $monthlyCount }} orders</span>
                             </div>
                         </div>
                         <div class="relative overflow-hidden rounded-2xl bg-gray-900 border border-gray-800 p-4">
@@ -484,9 +657,7 @@ body { font-family: 'Inter', sans-serif; }
                             <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Total Sales</p>
                             <p class="text-2xl font-black text-[#EE6D3C]">${{ number_format($grandTotal, 2) }}</p>
                             <div class="flex items-center gap-1.5 mt-2">
-                                <span class="inline-flex items-center gap-1 bg-white/10 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                    {{ $completedOrders->count() }} completed
-                                </span>
+                                <span class="inline-flex items-center gap-1 bg-white/10 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $completedOrders->count() }} completed</span>
                             </div>
                         </div>
                     </div>
@@ -520,26 +691,25 @@ body { font-family: 'Inter', sans-serif; }
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
-                                @forelse($completedOrders->sortByDesc('created_at') as $sale)
-                                    <tr class="hover:bg-[#FFF8F5] transition"
-                                        x-show="matchSale('#{{ $sale->id }}', '{{ \Carbon\Carbon::parse($sale->created_at)->toDateString() }}')">
+                                <template x-if="filteredSales.length === 0">
+                                    <tr><td colspan="3" class="p-10 text-center text-gray-400 italic text-sm">No completed sales yet</td></tr>
+                                </template>
+                                <template x-for="sale in pagedSales" :key="sale.id">
+                                    <tr class="hover:bg-[#FFF8F5] transition">
                                         <td class="px-4 py-3">
-                                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#FFE4DB] text-[10px] font-black text-[#EE6D3C]">
-                                                #{{ $sale->id }}
-                                            </span>
+                                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#FFE4DB] text-[10px] font-black text-[#EE6D3C]"
+                                                x-text="'#' + sale.id"></span>
                                         </td>
                                         <td class="px-4 py-3 hidden md:table-cell">
-                                            <p class="text-gray-700 text-sm font-medium">{{ \Carbon\Carbon::parse($sale->created_at)->format('d M Y') }}</p>
-                                            <p class="text-xs text-gray-400">{{ \Carbon\Carbon::parse($sale->created_at)->format('h:i A') }}</p>
+                                            <p class="text-gray-700 text-sm font-medium" x-text="sale.date"></p>
+                                            <p class="text-xs text-gray-400" x-text="sale.time"></p>
                                         </td>
                                         <td class="px-4 py-3 text-right">
-                                            <p class="text-sm font-black text-gray-900">${{ number_format($sale->total_amount ?? 0, 2) }}</p>
+                                            <p class="text-sm font-black text-gray-900" x-text="'$' + sale.total.toFixed(2)"></p>
                                             <span class="text-[10px] font-bold text-green-500 bg-green-50 px-1.5 py-0.5 rounded-full">Paid</span>
                                         </td>
                                     </tr>
-                                @empty
-                                    <tr><td colspan="3" class="p-10 text-center text-gray-400 italic text-sm">No completed sales yet</td></tr>
-                                @endforelse
+                                </template>
                             </tbody>
                             @if($completedOrders->count())
                             <tfoot>
@@ -554,6 +724,25 @@ body { font-family: 'Inter', sans-serif; }
                             </tfoot>
                             @endif
                         </table>
+                    </div>
+
+                    {{-- Sales Pagination --}}
+                    <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
+                        <p class="text-xs text-gray-400"
+                            x-text="filteredSales.length
+                                ? 'Showing ' + ((salePage-1)*salePerPage+1) + '–' + Math.min(salePage*salePerPage, filteredSales.length) + ' of ' + filteredSales.length + ' entries'
+                                : ''"></p>
+                        <div x-show="saleTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
+                            <button @click="salePage--" :disabled="salePage === 1"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                            <template x-for="p in salePageNums" :key="p">
+                                <button @click="salePage = p"
+                                    :class="salePage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
+                            </template>
+                            <button @click="salePage++" :disabled="salePage === saleTotalPages"
+                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                        </div>
                     </div>
 
                 </div>{{-- end sales --}}
@@ -591,14 +780,10 @@ body { font-family: 'Inter', sans-serif; }
                 </div>
                 <div class="flex gap-2">
                     <button @click="exportModal = false"
-                        class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">
-                        Cancel
-                    </button>
+                        class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Cancel</button>
                     <button @click="confirmExport()"
                         class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition active:scale-95"
-                        :class="exportColorClass">
-                        Export now
-                    </button>
+                        :class="exportColorClass">Export now</button>
                 </div>
             </div>
         </div>
@@ -613,7 +798,7 @@ body { font-family: 'Inter', sans-serif; }
             </div>
         </div>
 
-        {{-- ===== PRINTABLE ===== --}}
+        {{-- ===== PRINTABLE (unchanged — uses Blade for full data) ===== --}}
         <div id="printable-invoice" class="hidden">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold uppercase underline">FastBite — Full Report</h1>

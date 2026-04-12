@@ -42,7 +42,7 @@ class MenuController extends Controller
         $ordersQuery = Order::with('items');
         $user = auth()->user();
 
-        if ($user->role !== 'admin') {
+        if (!$user->isSuperAdmin()) {
             $ordersQuery->where('user_id', $user->id);
         }
 
@@ -61,10 +61,19 @@ class MenuController extends Controller
     public function storeOrder(Request $request)
     {
         try {
+            $validated = $request->validate([
+                'total' => ['required', 'numeric', 'min:0'],
+                'cart' => ['required', 'array', 'min:1'],
+                'cart.*.id' => ['required', 'integer', 'exists:products,id'],
+                'cart.*.name' => ['required', 'string'],
+                'cart.*.price' => ['required', 'numeric', 'min:0'],
+                'cart.*.qty' => ['required', 'integer', 'min:1'],
+            ]);
+
             DB::beginTransaction();
 
             $order = Order::create([
-                'total_amount' => $request->total,
+                'total_amount' => $validated['total'],
                 'status'       => 'pending',
                 'user_id'      => auth()->id(),
             ]);
@@ -72,7 +81,7 @@ class MenuController extends Controller
             $alertProducts = [];
             $itemLines     = [];
 
-            foreach ($request->cart as $item) {
+            foreach ($validated['cart'] as $item) {
                 
                 OrderItem::create([
                     'order_id'   => $order->id,
@@ -110,7 +119,7 @@ class MenuController extends Controller
                 "*Items:*",
                 implode("\n", $itemLines),
                 "━━━━━━━━━━━━━━━━━━━━",
-                "*Total: \$" . number_format($request->total, 2) . "*",
+                "*Total: \$" . number_format($validated['total'], 2) . "*",
             ]));
 
             // ── Telegram: Stock alerts ──
@@ -144,7 +153,7 @@ class MenuController extends Controller
             $order = Order::findOrFail($id);
             $user = auth()->user();
 
-            if ($user->role !== 'admin' && $order->user_id !== $user->id) {
+            if (!$user->isSuperAdmin() && $order->user_id !== $user->id) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
             $old   = $order->status;
@@ -188,7 +197,7 @@ class MenuController extends Controller
             $order = Order::with('items')->findOrFail($id);
             $user = auth()->user();
 
-            if ($user->role !== 'admin' && $order->user_id !== $user->id) {
+            if (!$user->isSuperAdmin() && $order->user_id !== $user->id) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
 

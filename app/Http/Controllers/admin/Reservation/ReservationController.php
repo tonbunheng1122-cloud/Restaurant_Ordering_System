@@ -12,7 +12,7 @@ class ReservationController extends Controller
         $user = auth()->user();
         $query = Reservation::query();
 
-        if ($user->role !== 'admin') {
+        if (!$user->isSuperAdmin()) {
             $query->where('user_id', $user->id);
         }
 
@@ -76,7 +76,7 @@ class ReservationController extends Controller
             ->where('full_name', 'like', "%{$query}%")
             ->orWhere('phone_number', 'like', "%{$query}%");
 
-        if ($user->role !== 'admin') {
+        if (!$user->isSuperAdmin()) {
             $reservationsQuery->where('user_id', $user->id);
         }
 

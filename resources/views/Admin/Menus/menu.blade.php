@@ -57,7 +57,11 @@ $ordersJson = $orders->map(function($o) {
         stockAlerts: [],
         toast: null,
         currentPage: 1,
-        perPage: 5,
+        perPage: 6,
+
+        /* ── Order History Pagination ── */
+        orderPage: 1,
+        orderPerPage: 5,
 
         /* ── KHQR state ── */
         khqrDataUrl: null,
@@ -143,6 +147,13 @@ $ordersJson = $orders->map(function($o) {
         get pageNumbers() { return Array.from({ length: this.totalPages }, (_, i) => i + 1); },
         setCategory(cat) { this.activeCategory = cat; this.currentPage = 1; },
 
+        get paginatedOrders() {
+            const start = (this.orderPage - 1) * this.orderPerPage;
+            return this.orders.slice(start, start + this.orderPerPage);
+        },
+        get orderTotalPages()  { return Math.ceil(this.orders.length / this.orderPerPage); },
+        get orderPageNumbers() { return Array.from({ length: this.orderTotalPages }, (_, i) => i + 1); },
+
         get subtotal() { return this.cart.reduce((sum, item) => sum + item.price * item.qty, 0); },
 
         getProductImage(image) {
@@ -188,6 +199,7 @@ $ordersJson = $orders->map(function($o) {
                     });
                     this.cart           = [];
                     this.showOrderModal = false;
+                    this.orderPage      = 1;
                     this.showToast('Order #' + data.order_id + ' saved!');
                 } else {
                     this.showToast(data.error || 'Order failed', 'error');
@@ -240,6 +252,7 @@ $ordersJson = $orders->map(function($o) {
             .then(data => {
                 if (data.message) {
                     this.orders = this.orders.filter(o => o.id !== id);
+                    if (this.orderPage > this.orderTotalPages) this.orderPage = Math.max(1, this.orderTotalPages);
                     this.showToast('Order #' + id + ' deleted.');
                 } else {
                     this.showToast('Delete failed', 'error');
@@ -452,11 +465,11 @@ $ordersJson = $orders->map(function($o) {
             </div>
 
             {{-- ===== ORDER HISTORY ===== --}}
-            <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mb-8">
-                <div class="flex items-center gap-3 mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Order History</h2>
-                    <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full"
-                        x-text="orders.length + ' orders'"></span>
+        <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mb-8">
+            <div class="flex items-center gap-3 mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Order History</h2>
+                <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full"
+                    x-text="orders.length + ' orders'"></span>
                 </div>
                 <div class="w-full overflow-x-auto rounded-xl border border-gray-100">
                     <table class="w-full text-left text-sm">
@@ -474,7 +487,7 @@ $ordersJson = $orders->map(function($o) {
                             <template x-if="orders.length === 0">
                                 <tr><td colspan="6" class="p-10 text-center text-gray-400 italic">No orders found.</td></tr>
                             </template>
-                            <template x-for="order in orders" :key="order.id">
+                            <template x-for="order in paginatedOrders" :key="order.id">
                                 <tr class="hover:bg-orange-50/50 transition align-top">
                                     <td class="p-4 font-medium text-gray-700 whitespace-nowrap" x-text="'#' + order.id"></td>
                                     <td class="p-4">
@@ -553,7 +566,19 @@ $ordersJson = $orders->map(function($o) {
                         </tbody>
                     </table>
                 </div>
+            {{-- Order History Pagination --}}
+            <div x-show="orderTotalPages > 1" class="flex justify-center items-center gap-2 mt-6 flex-wrap">
+                <button @click="orderPage--" :disabled="orderPage === 1"
+                    class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center text-lg">‹</button>
+                <template x-for="page in orderPageNumbers" :key="page">
+                    <button @click="orderPage = page"
+                        :class="orderPage === page ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                        class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="page"></span></button>
+                </template>
+                <button @click="orderPage++" :disabled="orderPage === orderTotalPages"
+                    class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center text-lg">›</button>
             </div>
+        </div>
 
         </main>
     </div>

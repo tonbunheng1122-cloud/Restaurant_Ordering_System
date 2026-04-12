@@ -13,12 +13,14 @@ use App\Http\Controllers\Admin\Setting\SettingController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\User\UserController;
 use App\Http\Controllers\Admin\Menu\MenuController;
+use App\Http\Controllers\OrderNotificationController;
 use App\Http\Controllers\User\UserDashboardController;
 
 // ================================================================================
 // PUBLIC ROUTES
 // ================================================================================
 Route::get('/', [UserwebController::class, 'pages'])->name('userweb.index');
+Route::post('/order/store', [MenuController::class, 'storeOrder'])->name('order.store');
 
 Route::get('/login',   [LoginController::class, 'showLogin'])->name('login');
 Route::post('/login',  [LoginController::class, 'login']);
@@ -32,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard
     Route::get('/dashboards', function () {
-        if (auth()->user()->role === 'Admin') {
+        if (auth()->user()->hasAdminAccess()) {
             return app(DashboardController::class)->pageDashboard();
         } else {
             return app(UserDashboardController::class)->pageDashboard();
@@ -66,7 +68,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Menu & Orders
     Route::get('/menu',               [MenuController::class, 'pageMenu'])    ->name('menu.index');
-    Route::post('/order/store',       [MenuController::class, 'storeOrder'])  ->name('order.store');
+    Route::get('/notifications/orders', [OrderNotificationController::class, 'index'])->name('notifications.orders');
     Route::post('/order/{id}/status', [MenuController::class, 'updateStatus'])->name('order.status');
     Route::delete('/order/{id}',      [MenuController::class, 'destroyOrder'])->name('order.destroy');
 

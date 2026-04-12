@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Order;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use App\Models\Setting;
 
@@ -40,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
                 'rating'          => Setting::get('rating', '4.9'),
             ];
             $view->with('settings', $settings);
+        });
+
+        View::composer('components.asidebar', function ($view) {
+            $view->with('orderNotifications', Order::notificationsFor(Auth::user(), 8));
         });
     }
 }
