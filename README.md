@@ -1,122 +1,90 @@
 # 🍔 FastBite - Premium Restaurant Ordering System
 
-FastBite is a state-of-the-art, full-featured restaurant management and ordering ecosystem built with **Laravel 12**. Designed for high-performance and seamless user experience, it bridges the gap between customer convenience and administrative control through real-time analytics, automated workflows, and a modern, modular architecture.
+![Premium Dashboard](/Users/apple/.gemini/antigravity/brain/8c70b690-8961-4e42-9053-e4f16238cade/dashboard_mockup_1776701000713.png)
+
+FastBite is a high-performance, full-featured restaurant management and ordering ecosystem built with **Laravel 12**. Designed for modern dining establishments, it prioritizes speed, visual excellence, and operational intelligence.
 
 ---
 
-## 🌟 Core Features
+## 🌟 Modern Feature Suite
 
-### 🏛️ Enterprise-Grade Admin Dashboard
-- **Real-time Analytics**: Interactive sales performance charts powered by **Chart.js**.
-- **Product Lifecycle Management**: Comprehensive CRUD for menu items with rich image processing and real-time stock tracking.
-- **Intelligent Reservations**: Manage table bookings with guest count tracking, status updates, and search capabilities.
-- **Role-Based Access Control (RBAC)**: Distinct permissions for `Admin` and `Staff` users to ensure system integrity.
-- **Dynamic Settings**: Global system configuration including featured dishes, ticker announcements, and brand identity management.
+### 🏛️ Smart Admin Dashboard
+*Manage your entire business from a single, glassmorphic interface.*
+- **Live Analytics**: Monitor sales, average order value, and daily volume at a glance.
+- **Menu Architecture**: Create, update, and categorize products with real-time stock tracking.
+- **Reservation Engine**: Real-time table booking management with guest tracking.
+- **Staff Governance**: Role-based access control (Admin/Staff) with audit logs.
 
 ### 🍱 Premium Customer Experience
-- **Fluid Menu Interface**: A highly optimized, mobile-responsive menu with instant category filtering and micro-animations.
-- **Seamless Ordering**: "Fast-Track" checkout with table number association and real-time cart persistence.
-- **Smart Reservations**: Intuitive frontend booking system for customers.
-- **Next-Gen UI/UX**: Built with **Tailwind CSS 4.0**, featuring a fully reactive **Light/Dark mode** system that remembers user preferences.
+*Provide your guests with a sub-second, mobile-responsive ordering journey.*
+- **Reactive Menu**: Instant category filtering and smooth cart management.
+- **Personalization**: Support for Light/Dark modes and saved user preferences.
+- **Fast Checkout**: Direct table-to-kitchen ordering system.
 
-### 🤖 Automation & Governance
-- **Telegram Bot Integration**: Instant notifications for new orders, status changes, and critical system alerts.
-- **Safe Delete Workflow**: A unique "Deletion Request" system where staff can request deletions that must be approved by an administrator.
-- **Reporting Engine**: One-click generation of professional reports in **Excel** and **PDF** formats.
-- **Session Tracking**: Robust monitoring of user logins and "last seen" activity.
-
----
-
-## 🛠️ Technology Stack
-
-| Layer | Technologies |
-| :--- | :--- |
-| **Backend** | Laravel 12.x, PHP 8.2+ |
-| **Frontend** | Tailwind CSS 4.0, Alpine.js, Vite |
-| **Database** | MySQL / MariaDB (Optimized Schema) |
-| **Caching/Queues** | Redis (Predis) |
-| **Storage** | Laravel Filesystem (S3 Compatible) |
-| **Reporting** | Maatwebsite Excel, Barryvdh Laravel Snappy (PDF) |
-| **DevOps** | Laravel Sail, Artisan CLI |
+### 🤖 Intelligent Operations
+*Automate your restaurant with background processing and instant alerts.*
+- **Telegram Bot**: Instant notifications for new orders and stock warnings.
+- **Redis Scaling**: Sub-millisecond data retrieval for sessions and caching.
 
 ---
 
-## 🚀 Intelligent Setup Guide
+## 🚀 Rapid Setup Guide
 
 ### 1. Prerequisites
-- **PHP 8.2+** (with extensions: BCMath, Ctype, Fileinfo, JSON, Mbstring, OpenSSL, PDO, Tokenizer, XML)
-- **Composer** (PHP Package Manager)
-- **Node.js 18+ & NPM**
-- **Redis Server** (Highly recommended for high-performance queue processing)
+- **PHP 8.2+** | **Composer** | **Node.js 18+** | **Database** (MySQL/MariaDB)
 
-### 2. Rapid Deployment
+### 2. High-Speed Installation
+To get the system running with all dependencies and sample data using our automated scripts:
+
 ```bash
-# 1. Acquire the Source
-git clone <repository-url>
-cd Restaurant_Ordering_System
+# 1. Clone the project
+git clone < repository-url > && cd Restaurant_Ordering_System
 
 # 2. Automated Foundation Setup
-# This custom script handles composer, .env, key generation, and migrations
 composer run setup
 
-# 3. Security Check
-# Ensure admin credentials are seeded
+# 3. Seed Admin Access
 php artisan db:seed --class=AdminSeeder
 ```
+
 > [!IMPORTANT]
-> Default Administration Credentials:
-> - **Username**: `admin`
-> - **Password**: `admin@123`
+> **Default Credentials:**
+> - **Username**: `admin` | **Password**: `admin123`
+> - *Please change your password immediately after your first login.*
 
 ---
 
-## 📂 Architecture Overview
+## 💾 Performance & Scaling (Redis)
 
-### Modular Asset Management
-The project utilizes a decoupled asset strategy to ensure minimal bundle sizes:
-- **`resources/css/userweb.css`**: Customer-facing design tokens and responsive layouts.
-- **`resources/js/userweb.js`**: Frontend logic, cart management, and table selection logic.
-- **`app/Http/Controllers/Admin`**: High-performance controllers for data-intensive operations.
+FastBite leverages **Redis** to ensure your application stays responsive even during peak hours.
 
-### Key Database Entities
-- **`Orders` & `OrderItems`**: High-fidelity transaction tracking with table association.
-- **`Products` & `Categories`**: Multi-layered taxonomy for menu organization.
-- **`DeletionRequests`**: Audit trail for system-wide record management.
-- **`Logins`**: Real-time security and activity monitoring.
+- **Persistent Sessions**: User sessions are stored in memory for instant transitions.
+- **Dynamic Caching**: Critical data like popular dishes and sales stats are cached to reduce database load.
+- **Background Workers**: Heavy tasks (notifications, reports) are processed in the background, never slowing down the user.
 
 ---
 
-## 📢 Integration: Telegram Notifications
+## 📢 Telegram Integration
 
-Enable real-time operational alerts by configuring your bot:
-1. Contact [@BotFather](https://t.me/botfather) to create your bot.
-2. Update your `.env` with the following:
-   ```env
-   TELEGRAM_BOT_TOKEN=your_token_here
-   TELEGRAM_CHAT_ID=your_chat_id_here
-   ```
-3. Start the worker to process alerts in the background:
-   ```bash
-   php artisan queue:work
-   ```
+Connect your restaurant directly to your pocket with instant Telegram alerts.
+
+### Setup Instructions:
+1. **Create Bot**: Message [@BotFather](https://t.me/botfather) for your unique **API Token**.
+2. **Get ID**: Message your bot and visit the Telegram API updates page to find your **Chat ID**.
+3. **Connect**: Update your `.env` file with the **Token** and **Chat ID**.
+
+*The system will automatically notify you of New Orders, Status Changes, and Stock Warnings.*
 
 ---
 
-## 🖥️ Development Workflow
+## 🔧 Maintenance Toolkit
 
-Run the development ecosystem concurrently:
-```bash
-composer run dev
-```
-*This command starts: Artisan Server, Vite Dev Server, Queue Worker, and Log Tailer.*
-
----
-
-## 🛡️ Security & Performance
-- **Cross-Site Request Forgery (CSRF) Protection** enabled on all state-changing routes.
-- **SQL Injection Prevention** via Eloquent ORM.
-- **Asset Minification** via Vite for sub-second page loads.
-- **Persisted State Management** for theme preferences and session data.
+| Category | Command | Purpose |
+| :--- | :--- | :--- |
+| **Development** | `composer run dev` | Start Server, Vite, and Queues simultaneously |
+| **Database** | `php artisan migrate:fresh --seed` | Wipe and re-populate the entire system |
+| **Filesystem** | `php artisan storage:link` | Fix missing product images by linking folders |
+| **Security** | `php artisan session:clear` | Log out all active users and clear Redis sessions |
 
 ---
 
