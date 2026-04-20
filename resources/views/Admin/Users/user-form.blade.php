@@ -1,3 +1,4 @@
+@include('partials.theme-head')
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 <style>
     body { font-family: 'Inter', sans-serif; }
@@ -7,19 +8,19 @@
 </style>
 <title>FastBite | {{ isset($user) ? 'Edit User' : 'Add User' }}</title>
 
-<div class="bg-[#FFE4DB] min-h-screen" x-data="{ mobileMenuOpen: false }">
+<div class="bg-[var(--admin-bg-primary)] min-h-screen text-[var(--admin-text-primary)]" x-data="{ mobileMenuOpen: false }">
     <div class="flex flex-col md:flex-row md:h-screen md:p-4 md:gap-6 md:overflow-hidden relative">
 
         @include('components.asidebar')
 
         <main class="flex-1 overflow-y-auto px-3 pb-4 md:px-0 md:pr-2 custom-scrollbar">
-            <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-3 md:mt-0 mb-8">
+            <div class="bg-[var(--admin-card-bg)] rounded-lg shadow-sm border border-[var(--admin-border)] p-6 md:p-8 mt-3 md:mt-0 mb-8">
 
                 @include('components.alerts')
 
                 <!-- Header -->
                 <div class="flex items-center gap-3 mb-8">
-                    <h2 class="text-2xl font-bold text-gray-800">
+                    <h2 class="text-2xl font-bold text-[var(--admin-text-primary)]">
                         {{ isset($user) ? 'Edit User' : 'Add New User' }}
                     </h2>
                     <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">
@@ -37,42 +38,36 @@
                     <div class="max-w-lg flex flex-col gap-5">
 
                         <!-- Avatar preview -->
-                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div class="flex items-center gap-4 p-4 bg-[var(--admin-bg-primary)] rounded-xl border border-[var(--admin-border)]">
                             <div class="w-14 h-14 rounded-2xl bg-[#FFE4DB] text-[#EE6D3C] font-black text-2xl flex items-center justify-center flex-shrink-0">
                                 {{ isset($user) ? strtoupper(substr($user->username, 0, 1)) : '?' }}
                             </div>
                             <div>
-                                <p class="font-bold text-gray-800 text-sm">{{ isset($user) ? $user->username : 'New User' }}</p>
-                                <p class="text-xs text-gray-400">{{ isset($user) ? ($user->role ?? 'User') : 'Role not set' }}</p>
+                                <p class="font-bold text-[var(--admin-text-primary)] text-sm">{{ isset($user) ? $user->username : 'New User' }}</p>
+                                <p class="text-xs text-[var(--admin-text-secondary)]">{{ isset($user) ? ($user->role ?? 'User') : 'Role not set' }}</p>
                             </div>
                         </div>
 
                         <!-- Username -->
                         <div class="flex flex-col gap-2">
-                            <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Username *</label>
+                            <label class="font-bold text-[var(--admin-text-secondary)] text-sm uppercase tracking-wide">Username *</label>
                             <input type="text" name="username" required
                                 value="{{ old('username', $user->username ?? '') }}"
                                 placeholder="Enter username"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
+                                class="w-full px-4 py-3 border border-[var(--admin-border)] bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
                                     @error('username') border-red-400 @enderror">
-                            @error('username')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                            @enderror
                         </div>
 
                         <!-- Role -->
                         <div class="flex flex-col gap-2">
-                            <label class="font-bold text-gray-700 text-sm uppercase tracking-wide">Role *</label>
+                            <label class="font-bold text-[var(--admin-text-secondary)] text-sm uppercase tracking-wide">Role *</label>
                             <select name="role" required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-white transition
+                                class="w-full px-4 py-3 border border-[var(--admin-border)] bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition
                                     @error('role') border-red-400 @enderror">
                                 <option value="">Select role</option>
                                 <option value="Admin" {{ old('role', $user->role ?? '') === 'Admin' ? 'selected' : '' }}>Admin</option>
                                 <option value="User"  {{ old('role', $user->role ?? '') === 'User'  ? 'selected' : '' }}>User</option>
                             </select>
-                            @error('role')
-                                <span class="text-red-500 text-xs">{{ $message }}</span>
-                            @enderror
                         </div>
 
                         <!-- Password -->
@@ -128,13 +123,13 @@
                     </div>
 
                     <!-- Footer Actions -->
-                    <div class="flex flex-col sm:flex-row justify-end gap-3 mt-8 pt-6 border-t border-gray-100">
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 mt-8 pt-6 border-t border-[var(--admin-border)]">
                         <a href="{{ route('user.index') }}"
-                            class="px-6 py-3 border border-gray-300 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition text-sm text-center">
+                            class="px-6 py-3 border border-[var(--admin-border)] text-[var(--admin-text-secondary)] font-bold rounded-xl hover:bg-orange-50/10 transition text-sm text-center">
                             Cancel
                         </a>
                         <button type="submit"
-                            class="flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-gray-700 text-white font-bold rounded-xl transition text-sm">
+                            class="flex items-center gap-2 px-6 py-3 bg-[#EE6D3C] hover:bg-orange-700 text-white font-bold rounded-xl transition text-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>

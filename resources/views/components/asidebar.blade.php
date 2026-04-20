@@ -1,3 +1,11 @@
+<script>
+    window.toggleTheme = function() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        const theme = isDark ? 'dark' : 'light';
+        localStorage.setItem('theme', theme);
+        window.dispatchEvent(new CustomEvent('theme-changed', { detail: theme }));
+    };
+</script>
 @php
     use Illuminate\Support\Facades\Auth;
 
@@ -128,7 +136,7 @@
 >
 
     {{-- ── Mobile Header ───────────────────────────────── --}}
-    <header class="md:hidden sticky top-0 z-30 bg-white border-b border-orange-100 shadow-sm">
+    <header class="md:hidden sticky top-0 z-30 bg-[var(--admin-card-bg)] border-b border-[var(--admin-border)] shadow-sm">
         <div class="flex items-center justify-between px-4 py-3">
 
             {{-- Hamburger --}}
@@ -152,7 +160,7 @@
                 <button
                     type="button"
                     @click="toggleNotifications()"
-                    class="relative p-2 rounded-xl text-gray-500 hover:bg-orange-50 hover:text-[#EE6D3C] transition-all duration-200"
+                    class="relative p-2 rounded-xl text-[var(--admin-text-secondary)] hover:bg-orange-50/10 hover:text-[#EE6D3C] transition-all duration-200"
                     title="Order notifications"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,13 +202,13 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-            class="w-full max-w-sm bg-white border border-orange-100 rounded-2xl shadow-2xl overflow-hidden"
+            class="w-full max-w-sm bg-[var(--admin-card-bg)] border border-[var(--admin-border)] rounded-2xl shadow-2xl overflow-hidden"
         >
             {{-- Header --}}
-            <div class="px-4 py-3 border-b border-orange-50 flex items-center justify-between">
+            <div class="px-4 py-3 border-b border-[var(--admin-border)] flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-black text-gray-800">Order Alerts</p>
-                    <p class="text-[11px] text-gray-400">Same alerts sent to Telegram</p>
+                    <p class="text-sm font-black text-[var(--admin-text-primary)]">Order Alerts</p>
+                    <p class="text-[11px] text-[var(--admin-text-secondary)]">Same alerts sent to Telegram</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <button
@@ -213,7 +221,7 @@
                     <button
                         type="button"
                         @click="notificationOpen = false"
-                        class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition"
+                        class="p-1 rounded-lg text-[var(--admin-text-secondary)] hover:bg-[var(--admin-bg-primary)] hover:text-[var(--admin-text-primary)] transition"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -231,20 +239,20 @@
                 </template>
 
                 <template x-for="item in notifications" :key="item.id">
-                    <div class="px-4 py-3 border-b border-gray-100 last:border-b-0">
+                    <div class="px-4 py-3 border-b border-[var(--admin-border)] last:border-b-0">
                         <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-orange-50 text-[#EE6D3C] flex items-center justify-center flex-shrink-0">
+                            <div class="w-10 h-10 rounded-xl bg-orange-50/10 text-[#EE6D3C] flex items-center justify-center flex-shrink-0">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
                             </div>
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-center justify-between gap-2">
-                                    <p class="text-sm font-bold text-gray-800" x-text="item.title"></p>
-                                    <span class="text-[10px] text-gray-400 whitespace-nowrap" x-text="item.time"></span>
+                                    <p class="text-sm font-bold text-[var(--admin-text-primary)]" x-text="item.title"></p>
+                                    <span class="text-[10px] text-[var(--admin-text-secondary)] whitespace-nowrap" x-text="item.time"></span>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1" x-text="item.message"></p>
-                                <div class="mt-2 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-[#EE6D3C] bg-orange-50 px-2.5 py-1 rounded-full">
+                                <p class="text-xs text-[var(--admin-text-secondary)] mt-1" x-text="item.message"></p>
+                                <div class="mt-2 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-[#EE6D3C] bg-orange-50/10 px-2.5 py-1 rounded-full">
                                     <span x-text="item.status"></span>
                                 </div>
                             </div>
@@ -254,7 +262,7 @@
             </div>
 
             {{-- Footer --}}
-            <div class="p-3 bg-gray-50 border-t border-gray-100">
+            <div class="p-3 bg-[var(--admin-bg-primary)] border-t border-[var(--admin-border)]">
                 <a
                     href="{{ route('menu.index') }}"
                     class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#EE6D3C] text-white text-sm font-bold hover:bg-orange-600 transition"
@@ -271,7 +279,7 @@
     {{-- Sidebar --}}
     <aside :class="open ? 'translate-x-0' : '-translate-x-full'"
         class="fixed md:static inset-y-0 left-0 z-40
-               w-64 h-full bg-white rounded-lg shadow-sm border border-orange-100
+               w-64 h-full bg-[var(--admin-sidebar-bg)] rounded-lg shadow-sm border border-[var(--admin-border)]
                flex flex-col transform transition-transform duration-300 ease-in-out
                md:translate-x-0 overflow-visible">
 
@@ -280,7 +288,7 @@
             <div class="flex items-center gap-2">
                 <img src="{{ asset('images/FASTBITE_LOGO.png') }}"
                      alt="Logo" class="w-10 h-10 object-contain">
-                <span class="text-lg font-black text-gray-800 tracking-tight">
+                <span class="text-lg font-black text-[var(--admin-text-primary)] tracking-tight">
                     Fast<span class="text-[#EE6D3C]">Bite</span>
                 </span>
             </div>
@@ -318,7 +326,7 @@
                 @if(!$loop->first)
                     <div class="pt-2 pb-1 border-t border-gray-100"></div>
                 @endif
-                <p class="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                <p class="px-4 pb-1 pt-1 text-[10px] font-black uppercase tracking-widest text-[var(--admin-text-secondary)]">
                     {{ $groupName }}
                 </p>
 
@@ -331,8 +339,8 @@
                     <a href="{{ route($item['route']) }}"
                        class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200
                            {{ $active
-                               ? 'bg-[#EE6D3C] text-white shadow-md shadow-orange-200'
-                               : 'text-gray-600 hover:bg-orange-50 hover:text-[#EE6D3C]' }}">
+                               ? 'bg-[var(--admin-aside-active-bg)] text-[var(--admin-aside-active-text)]'
+                               : 'text-[var(--admin-text-secondary)] hover:bg-orange-50/10 hover:text-[#EE6D3C]' }}">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/>
                         </svg>
@@ -347,15 +355,36 @@
         </nav>
 
         {{-- Bottom --}}
-        <div class="px-4 py-4 border-t border-orange-50 space-y-2">
+        <div class="px-4 py-4 border-t border-[var(--admin-border)] space-y-2">
+            {{-- Theme Toggle --}}
+            <button @click="toggleTheme()"
+                class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-[var(--admin-text-secondary)] hover:bg-orange-50/10 hover:text-[#EE6D3C] transition-all duration-200">
+                <template x-if="theme === 'dark'">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        <span>Light Mode</span>
+                    </div>
+                </template>
+                <template x-if="theme !== 'dark'">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                        <span>Dark Mode</span>
+                    </div>
+                </template>
+            </button>
+
             {{-- User info --}}
-            <div class="flex items-center gap-3 px-3 py-2.5 bg-gray-50 rounded-xl">
-                <div class="w-8 h-8 rounded-full bg-[#FFE4DB] text-[#EE6D3C] font-black text-sm flex items-center justify-center flex-shrink-0">
+            <div class="flex items-center gap-3 px-3 py-2.5 bg-[var(--admin-bg-primary)] rounded-xl border border-[var(--admin-border)]">
+                <div class="w-8 h-8 rounded-full bg-[#EE6D3C]/20 text-[#EE6D3C] font-black text-sm flex items-center justify-center flex-shrink-0 border border-[#EE6D3C]/30">
                     {{ strtoupper(substr($authUser->username ?? 'A', 0, 1)) }}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-gray-800 truncate">{{ $authUser->username ?? 'Admin' }}</p>
-                    <p class="text-[10px] text-gray-400 truncate">{{ $authUser->role ?? 'Admin' }}</p>
+                    <p class="text-sm font-bold text-[var(--admin-text-primary)] truncate">{{ $authUser->username ?? 'Admin' }}</p>
+                    <p class="text-[10px] text-[var(--admin-text-secondary)] truncate">{{ $authUser->role ?? 'Admin' }}</p>
                 </div>
                 <span class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" title="Online"></span>
             </div>
@@ -365,7 +394,7 @@
                 @csrf
                 <button type="submit"
                     class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold
-                           text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-200">
+                           text-[var(--admin-text-secondary)] hover:bg-red-00/10 hover:text-red-400 transition-all duration-200">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
@@ -386,6 +415,7 @@ function sidebarNotifications(config) {
         notificationUrl: config.notificationUrl,
         userId: config.userId || 0,
         lastSeenId: 0,
+        theme: localStorage.getItem('theme') || 'light',
 
         init() {
             this.restoreSeenState();
@@ -394,6 +424,11 @@ function sidebarNotifications(config) {
                 this.fetchNotifications();
                 setInterval(() => this.fetchNotifications(), 20000);
             }
+        },
+
+        toggleTheme() {
+            window.toggleTheme();
+            this.theme = localStorage.getItem('theme');
         },
 
         storageKey() {

@@ -1,3 +1,4 @@
+@include('partials.theme-head')
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <title>FastBite | Login</title>
@@ -8,14 +9,15 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        background: #FFF5EE;
+        background: var(--admin-bg-primary);
+        color: var(--admin-text-primary);
     }
 
     /* Fixed overlay guarantees full-screen coverage regardless of parent layout */
     .login-overlay {
         position: fixed;
         inset: 0;
-        background: #FFF5EE;
+        background: var(--admin-bg-primary);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -43,11 +45,11 @@
             flex-direction: column;
             justify-content: center;
             padding: 2rem 1.25rem 1.5rem;
-            background: #FFF5EE;
+            background: var(--admin-bg-primary);
         }
         .login-card {
             border-radius: 1.5rem !important;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08) !important;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2) !important;
         }
         .login-footer {
             padding-bottom: 2rem;
@@ -60,10 +62,10 @@
         <div class="login-card-wrap">
 
             <!-- Card -->
-            <div class="login-card bg-white rounded-2xl shadow-lg border border-orange-100 overflow-hidden">
+            <div class="login-card bg-[var(--admin-card-bg)] rounded-2xl shadow-xl border border-[var(--admin-border)] overflow-hidden">
 
                 <!-- Gradient top bar -->
-                <div class="h-1.5 w-full" style="background: linear-gradient(90deg, #7C3AED, #F4521E);"></div>
+                <div class="h-1.5 w-full bg-gradient-to-r from-[#7C3AED] to-[#F4521E]"></div>
 
                 <div class="px-6 py-8">
 
@@ -73,15 +75,15 @@
                             <img
                                 src="{{ Vite::asset('resources/images/FASTBITE_LOGO.png') }}"
                                 alt="FastBite Logo"
-                                class="h-16 w-auto object-contain"
+                                class="h-16 w-auto object-contain dark:brightness-110"
                             >
                         </div>
-                        <p class="text-xs text-gray-400 tracking-wide">Welcome back! Please sign in to continue.</p>
+                        <p class="text-xs text-[var(--admin-text-secondary)] tracking-wide font-medium">Welcome back! Please sign in to continue.</p>
                     </div>
 
                     <!-- Success Flash -->
                     @if(session('success'))
-                    <div class="flex items-start gap-2.5 mb-5 p-3.5 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl">
+                    <div class="flex items-start gap-2.5 mb-5 p-3.5 bg-green-50/10 border border-green-500/30 text-green-500 text-sm rounded-xl">
                         <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
@@ -91,7 +93,7 @@
 
                     <!-- Error Flash -->
                     @if($errors->has('login_error'))
-                    <div class="flex items-start gap-2.5 mb-5 p-3.5 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl">
+                    <div class="flex items-start gap-2.5 mb-5 p-3.5 bg-red-50/10 border border-red-500/30 text-red-500 text-sm rounded-xl">
                         <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -105,7 +107,7 @@
 
                         <!-- Username -->
                         <div class="flex flex-col gap-2">
-                            <label class="font-bold text-gray-700 text-xs uppercase tracking-wider">Username</label>
+                            <label class="font-bold text-[var(--admin-text-secondary)] text-xs uppercase tracking-wider">Username</label>
                             <input
                                 type="text"
                                 name="username"
@@ -117,12 +119,13 @@
                                 value="{{ old('username') }}"
                                 placeholder="Enter your username"
                                 style="min-height: 50px; font-size: 16px;"
-                                class="w-full px-4 py-3 border rounded-xl outline-none transition-all
-                                    focus:ring-2 focus:ring-orange-200 focus:border-orange-300
-                                    {{ $errors->has('username') ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50' }}"
+                                class="w-full px-4 py-3 border border-[var(--admin-border)] rounded-xl outline-none transition-all
+                                    focus:ring-2 focus:ring-orange-500/20 focus:border-[#F4521E]
+                                    bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)]
+                                    {{ $errors->has('username') ? 'border-red-400' : '' }}"
                             >
                             @error('username')
-                                <span class="text-red-500 text-xs flex items-center gap-1">
+                                <span class="text-red-500 text-xs flex items-center gap-1 font-medium">
                                     <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                     </svg>
@@ -133,7 +136,7 @@
 
                         <!-- Password -->
                         <div class="flex flex-col gap-2" x-data="{ show: false }">
-                            <label class="font-bold text-gray-700 text-xs uppercase tracking-wider">Password</label>
+                            <label class="font-bold text-[var(--admin-text-secondary)] text-xs uppercase tracking-wider">Password</label>
                             <div class="relative">
                                 <input
                                     :type="show ? 'text' : 'password'"
@@ -142,16 +145,17 @@
                                     autocomplete="current-password"
                                     placeholder="Enter your password"
                                     style="min-height: 50px; font-size: 16px;"
-                                    class="w-full px-4 py-3 pr-12 border rounded-xl outline-none transition-all
-                                        focus:ring-2 focus:ring-orange-200 focus:border-orange-300
-                                        {{ $errors->has('password') ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50' }}"
+                                    class="w-full px-4 py-3 pr-12 border border-[var(--admin-border)] rounded-xl outline-none transition-all
+                                        focus:ring-2 focus:ring-orange-500/20 focus:border-[#F4521E]
+                                        bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)]
+                                        {{ $errors->has('password') ? 'border-red-400' : '' }}"
                                 >
                                 <!-- Full-height tap zone — easy to hit on touch screens -->
                                 <button
                                     type="button"
                                     @click="show = !show"
                                     aria-label="Toggle password visibility"
-                                    class="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-gray-400 hover:text-[#F4521E] transition-colors"
+                                    class="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-[var(--admin-text-secondary)] hover:text-[#F4521E] transition-colors"
                                 >
                                     <svg x-show="!show" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -163,7 +167,7 @@
                                 </button>
                             </div>
                             @error('password')
-                                <span class="text-red-500 text-xs flex items-center gap-1">
+                                <span class="text-red-500 text-xs flex items-center gap-1 font-medium">
                                     <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                                     </svg>
@@ -175,8 +179,8 @@
                         <!-- Submit -->
                         <button
                             type="submit"
-                            class="w-full flex items-center justify-center gap-2 text-white font-bold rounded-xl transition-all text-sm active:scale-[0.98] hover:opacity-90"
-                            style="background: linear-gradient(135deg, #1A0F0A, #3D2B1F); min-height: 52px;"
+                            class="w-full flex items-center justify-center gap-2 text-white font-bold rounded-xl transition-all text-sm active:scale-[0.98] hover:opacity-90 shadow-lg shadow-black/10"
+                            style="background: linear-gradient(135deg, #F4521E, #3D2B1F); min-height: 52px;"
                         >
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
@@ -191,7 +195,7 @@
         </div>
 
         <!-- Footer -->
-        <p class="login-footer text-center text-[10px] text-gray-400 mt-5 pb-4 uppercase tracking-widest select-none">
+        <p class="login-footer text-center text-[10px] text-[var(--admin-text-secondary)] mt-5 pb-4 uppercase tracking-widest select-none opacity-60">
             © 2026 FastBite Restaurant System
         </p>
 

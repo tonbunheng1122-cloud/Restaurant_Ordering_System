@@ -12,6 +12,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
+use App\Models\Reservation;
 
 class MenuController extends Controller
 {
@@ -39,7 +40,7 @@ class MenuController extends Controller
                 'qty'      => (int) ($p->qty ?? 0),
             ]);
 
-        $ordersQuery = Order::with('items');
+        $ordersQuery = Order::with(['items', 'user']);
         $user = auth()->user();
 
         if (!$user->isSuperAdmin()) {
@@ -48,12 +49,42 @@ class MenuController extends Controller
 
         $orders = $ordersQuery->latest()->get();
 
+        $ordersJson = $orders->map(function($o) {
+            return [
+                'id'           => $o->id,
+                'table_number' => $o->table_number,
+                'status'       => $o->status ?? 'pending',
+                'handled_by'   => $o->user?->username ?? 'Unknown Staff',
+                'total_amount' => $o->total_amount,
+                'created_at'   => $o->created_at->format('d M Y'),
+                'time'         => $o->created_at->format('h:i A'),
+                'items'        => $o->items->map(function($i, $idx) {
+                    $product = $i->product;
+                    return [
+                        'uid'      => $i->id ?? $idx,
+                        'name'     => $product?->name ?? $i->name ?? 'Deleted Product',
+                        'quantity' => $i->quantity,
+                        'image'    => $product?->images[0] ?? null,
+                    ];
+                })->values()->toArray(),
+            ];
+        })->values();
+
         $lowStockProducts   = Product::where('qty', '<=', self::LOW_STOCK)->where('qty', '>', 0)->get();
         $outOfStockProducts = Product::where('qty', '<=', 0)->get();
 
+        $reservations = Reservation::latest()
+            ->take(100)
+            ->get()
+            ->map(fn($r) => [
+                'name'  => $r->full_name,
+                'table' => $r->table_id,
+            ]);
+
         return view('Admin.Menus.menu', compact(
-            'categories', 'products', 'orders',
-            'lowStockProducts', 'outOfStockProducts'
+            'categories', 'products', 'orders', 'ordersJson',
+            'lowStockProducts', 'outOfStockProducts',
+            'reservations'
         ));
     }
 
@@ -62,6 +93,7 @@ class MenuController extends Controller
     {
         try {
             $validated = $request->validate([
+                'table_number' => ['required', 'string', 'max:50'],
                 'total' => ['required', 'numeric', 'min:0'],
                 'cart' => ['required', 'array', 'min:1'],
                 'cart.*.id' => ['required', 'integer', 'exists:products,id'],
@@ -73,6 +105,7 @@ class MenuController extends Controller
             DB::beginTransaction();
 
             $order = Order::create([
+                'table_number' => $validated['table_number'],
                 'total_amount' => $validated['total'],
                 'status'       => 'pending',
                 'user_id'      => auth()->id(),
@@ -115,6 +148,7 @@ class MenuController extends Controller
                 "🛎 *New Order — FastBite*",
                 "━━━━━━━━━━━━━━━━━━━━",
                 "*Order ID:* #" . $order->id,
+                "*Table:* " . $order->table_number,
                 "*Status:* 🟡 Pending",
                 "*Items:*",
                 implode("\n", $itemLines),

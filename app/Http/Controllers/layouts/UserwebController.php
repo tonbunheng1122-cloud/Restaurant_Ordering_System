@@ -5,6 +5,7 @@ namespace App\Http\Controllers\layouts;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Reservation;
 
 class UserwebController extends Controller
 {
@@ -12,8 +13,12 @@ class UserwebController extends Controller
     {
         $categories = Category::withCount('products')->get();
         $products = Product::with('category')->get();
+        $reservations = Reservation::latest()->take(100)->get()->map(fn($r) => [
+            'name'  => $r->full_name,
+            'table' => $r->table_id,
+        ]);
 
-        return view('layouts.userweb', compact('categories', 'products'));
+        return view('layouts.userweb', compact('categories', 'products', 'reservations'));
     }
 
     public function tableOrder($tableNumber)

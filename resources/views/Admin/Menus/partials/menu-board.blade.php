@@ -1,0 +1,104 @@
+{{-- resources/views/Admin/Menus/partials/menu-board.blade.php --}}
+
+<div class="bg-[var(--admin-card-bg)] rounded-lg shadow-sm border border-[var(--admin-border)] p-6 md:p-8 mt-3 md:mt-0 mb-6">
+    <h2 class="text-2xl md:text-3xl text-[var(--admin-text-primary)] font-bold mb-6">Menu</h2>
+
+    {{-- Category tabs --}}
+    <div class="flex overflow-x-auto gap-3 pb-4 mb-8 no-scrollbar">
+        <button @click="setCategory(null)"
+            :class="activeCategory === null ? 'bg-[#EE6D3C] text-white' : 'bg-[var(--admin-card-bg)] border border-[var(--admin-border)] text-[var(--admin-text-primary)] hover:bg-orange-50/10'"
+            class="flex-shrink-0 min-w-[120px] p-4 rounded-lg transition text-left">
+            <div class="font-bold text-lg">All</div>
+            <div class="text-xs opacity-80" x-text="products.length + ' items'"></div>
+        </button>
+        <template x-for="cat in categories" :key="cat.name">
+            <button @click="setCategory(cat.name)"
+                :class="activeCategory === cat.name ? 'bg-[#EE6D3C] text-white' : 'bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50/10'"
+                class="flex-shrink-0 min-w-[120px] p-4 rounded-lg transition text-left">
+                <div class="font-bold text-lg" x-text="cat.name"></div>
+                <div class="text-xs opacity-80" x-text="cat.count + ' items'"></div>
+            </button>
+        </template>
+    </div>
+
+    <div class="flex flex-col xl:flex-row gap-8">
+        {{-- Product grid --}}
+        <div class="flex-1">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-if="filteredProducts.length === 0">
+                    <div class="col-span-3 text-center text-gray-400 py-20">
+                        <p class="text-xl">No products found.</p>
+                    </div>
+                </template>
+                <template x-for="product in paginatedProducts" :key="product.id">
+                    <div class="bg-[var(--admin-card-bg)] rounded-3xl border border-[var(--admin-border)] shadow-sm overflow-hidden group relative">
+                        <template x-if="product.qty <= 2 && product.qty > 0">
+                            <div class="absolute top-3 left-3 z-10 bg-amber-400 text-white text-xs font-bold px-2 py-1 rounded-full">⚠️ Low</div>
+                        </template>
+                        <template x-if="product.qty <= 0">
+                            <div class="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">🚫 Out</div>
+                        </template>
+                        <div class="p-3">
+                            <img :src="getProductImage(product.image)" class="w-full h-40 md:h-48 object-cover rounded-2xl group-hover:scale-105 transition cursor-pointer" :alt="product.name">
+                        </div>
+                        <div class="p-5 pt-0">
+                            <div class="text-[var(--admin-text-primary)] font-bold text-sm" x-text="product.name"></div>
+                            <div class="text-xs text-[var(--admin-text-secondary)] mt-0.5" x-text="'Stock: ' + product.qty + ' units'"></div>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-[#EE6D3C] font-bold text-xl" x-text="'$' + product.price.toFixed(2)"></span>
+                                <div class="flex items-center gap-2">
+                                    <button @click="removeFromCart(product.id)" class="w-8 h-8 rounded-lg bg-[var(--admin-bg-primary)] hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)]">-</button>
+                                    <span class="w-6 text-center font-bold text-[var(--admin-text-primary)]" x-text="cart.find(i => i.id === product.id)?.qty || 0"></span>
+                                    <button @click="addToCart(product.id, product.name, product.price, product.image)"
+                                        :disabled="product.qty <= 0"
+                                        class="w-8 h-8 rounded-lg bg-[#EE6D3C] hover:bg-orange-600 text-white transition font-bold disabled:opacity-30 disabled:cursor-not-allowed">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            {{-- Pagination --}}
+            <div x-show="totalPages > 1" class="flex justify-center items-center gap-2 mt-8 flex-wrap">
+                <button @click="currentPage--" :disabled="currentPage === 1"
+                    class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50/10 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center text-lg">‹</button>
+                <template x-for="page in pageNumbers" :key="page">
+                    <button @click="currentPage = page"
+                        :class="currentPage === page ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)] border-[var(--admin-border)] hover:bg-orange-50/10'"
+                        class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="page"></span></button>
+                </template>
+                <button @click="currentPage++" :disabled="currentPage === totalPages"
+                    class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50/10 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center text-lg">›</button>
+            </div>
+        </div>
+
+        {{-- Checkout panel --}}
+        <div class="w-full xl:w-[380px] flex-shrink-0">
+            <div class="border border-[var(--admin-border)] rounded-xl p-6 sticky top-4 bg-[var(--admin-card-bg)] shadow-sm">
+                <h3 class="text-2xl font-bold text-center mb-6 border-b pb-2">Checkout</h3>
+                <div class="space-y-4 mb-6 max-h-[300px] overflow-y-auto custom-scrollbar">
+                    <template x-if="cart.length === 0">
+                        <p class="text-center text-[var(--admin-text-secondary)] py-10">Your cart is empty</p>
+                    </template>
+                    <template x-for="item in cart" :key="item.id">
+                        <div class="flex justify-between items-center">
+                            <span x-text="item.name" class="font-medium text-[var(--admin-text-primary)] text-sm"></span>
+                            <span x-text="'x' + item.qty" class="text-[#EE6D3C] font-bold text-sm"></span>
+                        </div>
+                    </template>
+                </div>
+                <div class="border-t pt-4">
+                    <div class="flex justify-between font-bold text-xl mb-6">
+                        <span>Total:</span>
+                        <span x-text="'$' + subtotal.toFixed(2)"></span>
+                    </div>
+                    <button @click="showOrderModal = true" :disabled="cart.length === 0"
+                        class="w-full bg-[#EE6D3C] text-white py-4 rounded-2xl font-bold text-xl hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

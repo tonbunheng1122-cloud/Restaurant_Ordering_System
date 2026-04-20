@@ -1,3 +1,4 @@
+@include('partials.theme-head')
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 <style>
     body { font-family: 'Inter', sans-serif; }
@@ -7,20 +8,20 @@
 </style>
 <title>FastBite | User Management</title>
 
-<div class="bg-[#FFE4DB] min-h-screen" x-data="{ mobileMenuOpen: false }">
+<div class="bg-[var(--admin-bg-primary)] min-h-screen text-[var(--admin-text-primary)]" x-data="{ mobileMenuOpen: false }">
     <div class="flex flex-col md:flex-row md:h-screen md:p-4 md:gap-6 md:overflow-hidden relative">
 
         @include('components.asidebar')
 
         <main class="flex-1 overflow-y-auto px-3 pb-4 md:px-0 md:pr-2 custom-scrollbar">
-            <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-3 md:mt-0 mb-8">
+            <div class="bg-[var(--admin-card-bg)] rounded-lg shadow-sm border border-[var(--admin-border)] p-6 md:p-8 mt-3 md:mt-0 mb-8">
 
                 @include('components.alerts')
 
                 <!-- Header -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div class="flex items-center gap-3">
-                        <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
+                        <h2 class="text-2xl font-bold text-[var(--admin-text-primary)]">User Management</h2>
                         <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">
                             {{ $users->total() }} users
                         </span>
@@ -30,8 +31,8 @@
                             <input type="text" name="search"
                                 value="{{ request('search') }}"
                                 placeholder="Search users..."
-                                class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
-                            <button type="submit" class="absolute right-3 top-3.5 text-gray-400 hover:text-[#EE6D3C] transition">
+                                class="w-full pl-4 pr-10 py-3 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)]">
+                            <button type="submit" class="absolute right-3 top-3.5 text-[var(--admin-text-secondary)] hover:text-[#EE6D3C] transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
@@ -48,10 +49,10 @@
                 </div>
 
                 <!-- Table -->
-                <div class="w-full overflow-x-auto rounded-xl border border-gray-100">
+                <div class="w-full overflow-x-auto rounded-xl border border-[var(--admin-border)]">
                     <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50">
-                            <tr class="border-b text-gray-600 uppercase text-xs">
+                        <thead class="bg-[var(--admin-bg-primary)]">
+                            <tr class="border-b border-[var(--admin-border)] text-[var(--admin-text-secondary)] uppercase text-xs">
                                 <th class="p-4">ID</th>
                                 <th class="p-4">Username</th>
                                 <th class="p-4 hidden md:table-cell">Role</th>
@@ -63,13 +64,13 @@
                         <tbody class="divide-y">
                             @forelse($users as $user)
                             <tr class="hover:bg-orange-50/50 transition">
-                                <td class="p-4 font-medium text-gray-700">#{{ $user->id }}</td>
+                                <td class="p-4 font-medium text-[var(--admin-text-secondary)]">#{{ $user->id }}</td>
                                 <td class="p-4">
                                     <div class="flex items-center gap-3">
                                         <div class="w-8 h-8 rounded-full bg-[#FFE4DB] text-[#EE6D3C] font-black text-sm flex items-center justify-center flex-shrink-0">
                                             {{ strtoupper(substr($user->username, 0, 1)) }}
                                         </div>
-                                        <span class="font-semibold text-gray-800">{{ $user->username }}</span>
+                                        <span class="font-semibold text-[var(--admin-text-primary)]">{{ $user->username }}</span>
                                     </div>
                                 </td>
                                 <td class="p-4 hidden md:table-cell">
@@ -98,10 +99,10 @@
                                     @endif
                                 </td>
                                 <td class="p-4 hidden md:table-cell">
-                                    <span class="block text-gray-700 text-xs font-medium">
+                                    <span class="block text-[var(--admin-text-primary)] text-xs font-medium">
                                         {{ \Carbon\Carbon::parse($user->created_at)->format('d M Y') }}
                                     </span>
-                                    <span class="text-gray-400 text-xs">
+                                    <span class="text-[var(--admin-text-secondary)] text-xs">
                                         {{ \Carbon\Carbon::parse($user->created_at)->format('h:i A') }}
                                     </span>
                                 </td>

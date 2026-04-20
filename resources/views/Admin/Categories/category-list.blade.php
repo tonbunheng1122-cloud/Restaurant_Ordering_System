@@ -1,15 +1,16 @@
+@include('partials.theme-head')
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <style>
     body { font-family: 'Inter', sans-serif; }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #EE6D3C; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--admin-accent); border-radius: 10px; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
 </style>
 
 <title>FastBite | Category List</title>
 
-<div class="bg-[#FFE4DB] min-h-screen">
+<div class="bg-[var(--admin-bg-primary)] min-h-screen text-[var(--admin-text-primary)]">
     <div class="flex flex-col md:flex-row md:h-screen md:p-4 md:gap-6 md:overflow-hidden relative">
 
         {{-- Sidebar --}}
@@ -17,23 +18,23 @@
 
         {{-- Main Content --}}
         <main class="flex-1 overflow-y-auto px-3 pb-4 md:px-0 md:pr-2 custom-scrollbar">
-            <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-3 md:mt-0 mb-8">
+            <div class="bg-[var(--admin-card-bg)] rounded-lg shadow-sm border border-[var(--admin-border)] p-6 md:p-8 mt-3 md:mt-0 mb-8">
 
                 @include('components.alerts')
 
                 {{-- Header --}}
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div class="flex items-center gap-3">
-                        <h2 class="text-2xl font-bold text-gray-800">Category List</h2>
-                        <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">Categories</span>
+                     <h2 class="text-2xl font-bold text-[var(--admin-text-primary)]">Category List</h2>
+                        <span class="text-xs font-bold bg-[var(--admin-bg-primary)] text-[var(--admin-accent)] px-3 py-1 rounded-full border border-[var(--admin-accent)]/20">Categories</span>
                     </div>
                     <div class="flex items-center gap-3 flex-wrap">
                         <form method="GET" action="{{ route('allcategory.index') }}" class="relative w-full md:w-72">
                             <input type="text" name="search"
                                 value="{{ request('search') }}"
                                 placeholder="Search category..."
-                                class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition">
-                            <button type="submit" class="absolute right-3 top-3.5 text-gray-400 hover:text-[#EE6D3C] transition">
+                                class="w-full pl-4 pr-10 py-3 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-[var(--admin-accent)]/20 text-sm transition bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)]">
+                            <button type="submit" class="absolute right-3 top-3.5 text-[var(--admin-text-secondary)] hover:text-[var(--admin-accent)] transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
@@ -50,11 +51,11 @@
                 </div>
 
                 {{-- Table --}}
-                <div class="w-full overflow-x-auto rounded-xl border border-gray-100">
+                <div class="w-full overflow-x-auto rounded-xl border border-[var(--admin-border)]">
                     <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50">
-                            <tr class="border-b text-gray-600 uppercase text-xs">
-                                <th class="p-4 w-10"><input type="checkbox" class="rounded border-gray-300"></th>
+                        <thead class="bg-[var(--admin-bg-primary)]">
+                            <tr class="border-b border-[var(--admin-border)] text-[var(--admin-text-secondary)] uppercase text-xs">
+                                <th class="p-4 w-10"><input type="checkbox" class="rounded border-[var(--admin-border)] bg-[var(--admin-card-bg)]"></th>
                                 <th class="p-4">Image</th>
                                 <th class="p-4">Name</th>
                                 <th class="p-4 hidden md:table-cell">Code</th>
@@ -64,20 +65,20 @@
                         </thead>
                         <tbody class="divide-y">
                             @forelse($categories as $category)
-                            <tr class="hover:bg-orange-50/50 transition">
-                                <td class="p-4"><input type="checkbox" class="rounded border-gray-300"></td>
+                            <tr class="hover:bg-[var(--admin-accent)]/5 transition">
+                                <td class="p-4"><input type="checkbox" class="rounded border-[var(--admin-border)]"></td>
                                 <td class="p-4">
                                     <img src="{{ $category->image ? asset('storage/'.$category->image) : 'https://via.placeholder.com/80' }}"
                                         alt="{{ $category->name }}"
-                                        class="w-12 h-12 rounded-xl object-cover border border-gray-100 shadow-sm">
+                                        class="w-12 h-12 rounded-xl object-cover border border-[var(--admin-border)] shadow-sm">
                                 </td>
-                                <td class="p-4 font-semibold text-gray-800">{{ $category->name }}</td>
+                                <td class="p-4 font-semibold text-[var(--admin-text-primary)]">{{ $category->name }}</td>
                                 <td class="p-4 hidden md:table-cell">
-                                    <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold font-mono">
+                                    <span class="bg-[var(--admin-accent)]/10 text-[var(--admin-accent)] px-3 py-1 rounded-full text-xs font-bold border border-[var(--admin-accent)]/20 font-mono">
                                         #{{ str_pad($category->id, 4, '0', STR_PAD_LEFT) }}
                                     </span>
                                 </td>
-                                <td class="p-4 hidden lg:table-cell text-gray-500 text-sm truncate max-w-xs">
+                                <td class="p-4 hidden lg:table-cell text-[var(--admin-text-secondary)] text-sm truncate max-w-xs">
                                     {{ $category->description ?? 'No description' }}
                                 </td>
                                 <td class="p-4">

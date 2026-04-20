@@ -12,7 +12,7 @@ class LogoutController extends Controller
         $request->session()->flush();
         $request->session()->regenerate();
 
-        return redirect('/login')
+        return redirect('/')
             ->with('success', 'You have been logged out.')
             ->withHeaders([
                 'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',

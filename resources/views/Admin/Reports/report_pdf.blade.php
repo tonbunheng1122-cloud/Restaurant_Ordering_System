@@ -41,7 +41,7 @@
     <p>Generated: {{ $generatedAt }} &nbsp;|&nbsp; Type: {{ ucfirst($type) }}</p>
 </div>
 
-{{-- RESERVATIONS --}}
+<!-- RESERVATIONS -->
 @if($reservations->count())
 <div class="section">
     <div class="section-title">Reservations ({{ $reservations->count() }})</div>
@@ -70,7 +70,7 @@
 </div>
 @endif
 
-{{-- ORDERS --}}
+<!-- ORDERS -->
 @if($orders->count())
 <div class="section">
     <div class="section-title">Orders ({{ $orders->count() }})</div>
@@ -106,7 +106,7 @@
 </div>
 @endif
 
-{{-- PRODUCTS --}}
+<!-- PRODUCTS -->
 @if($products->count())
 <div class="section">
     <div class="section-title">Products ({{ $products->count() }})</div>
@@ -135,7 +135,7 @@
 </div>
 @endif
 
-{{-- CATEGORIES --}}
+<!-- CATEGORIES -->
 @if($categories->count())
 <div class="section">
     <div class="section-title">Categories ({{ $categories->count() }})</div>

@@ -1,3 +1,4 @@
+@include('partials.theme-head')
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <style>
@@ -39,7 +40,8 @@ body { font-family: 'Inter', sans-serif; }
     pointer-events: auto;
 }
 #export-modal .modal-box {
-    background: #fff;
+    background: var(--admin-card-bg);
+    border: 1px solid var(--admin-border);
     border-radius: 1.25rem;
     padding: 2rem 2.25rem;
     width: 100%;
@@ -110,7 +112,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
 ])->values();
 @endphp
 
-<div class="bg-[#FFE4DB] min-h-screen" x-data="{
+<div class="bg-[var(--admin-bg-primary)] min-h-screen text-[var(--admin-text-primary)]" x-data="{
     activeTab: 'reservations',
 
     /* ── Data ── */
@@ -247,29 +249,29 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
 
     <div class="flex flex-col md:flex-row md:h-screen md:p-4 md:gap-6 md:overflow-hidden relative">
 
-        {{-- Sidebar --}}
+        <!-- Sidebar -->
         @include('components.asidebar')
 
         <main class="flex-1 overflow-y-auto px-3 pb-4 md:px-0 md:pr-2 custom-scrollbar">
-            <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mt-3 md:mt-0 mb-8">
+            <div class="bg-[var(--admin-card-bg)] rounded-lg shadow-md border border-[var(--admin-border)] p-6 md:p-8 mt-3 md:mt-0 mb-8">
 
-                {{-- ===== HEADER ===== --}}
+                <!-- HEADER -->
                 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
                     <div>
                         <div class="flex items-center gap-3 mb-1">
-                            <div class="w-9 h-9 rounded-xl bg-[#FFE4DB] flex items-center justify-center">
+                            <div class="w-9 h-9 rounded-xl bg-[var(--admin-bg-primary)] flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#EE6D3C]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
                             </div>
-                            <h2 class="text-2xl font-bold text-gray-900">Reports</h2>
-                            <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full"
+                            <h2 class="text-2xl font-bold text-[var(--admin-text-primary)]">Reports</h2>
+                            <span class="text-xs font-bold bg-[var(--admin-bg-primary)] text-[#EE6D3C] px-3 py-1 rounded-full border border-[#EE6D3C]/20"
                                 x-text="activeTab.charAt(0).toUpperCase() + activeTab.slice(1)"></span>
                         </div>
-                        <p class="text-sm text-gray-400 ml-12">View and export your restaurant data</p>
+                        <p class="text-sm text-[var(--admin-text-secondary)] ml-12">View and export your restaurant data</p>
                     </div>
 
-                    {{-- Export buttons --}}
+                    <!-- Export buttons -->
                     <div class="flex items-center gap-2 flex-wrap no-print">
                         <button @click="openExport('excel')"
                             class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-150">
@@ -295,43 +297,43 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     </div>
                 </div>
 
-                {{-- ===== STATS ROW ===== --}}
+                <!-- STATS ROW -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-8">
-                    <div class="bg-orange-50 rounded-2xl p-4 border border-orange-100">
-                        <p class="text-xs font-semibold text-orange-400 uppercase tracking-wide mb-1">Reservations</p>
-                        <p class="text-2xl font-bold text-orange-700">{{ $reservations->count() }}</p>
+                    <div class="bg-orange-50 dark:bg-orange-500/10 rounded-2xl p-4 border border-orange-200 dark:border-orange-500/20 shadow-sm transition-all hover:shadow-md">
+                        <p class="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wide mb-1">Reservations</p>
+                        <p class="text-2xl font-black text-orange-600 dark:text-orange-500">{{ $reservations->count() }}</p>
                     </div>
-                    <div class="bg-blue-50 rounded-2xl p-4 border border-blue-100">
-                        <p class="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-1">Orders</p>
-                        <p class="text-2xl font-bold text-blue-700">{{ $orders->count() }}</p>
+                    <div class="bg-blue-50 dark:bg-blue-500/10 rounded-2xl p-4 border border-blue-200 dark:border-blue-500/20 shadow-sm transition-all hover:shadow-md">
+                        <p class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1">Orders</p>
+                        <p class="text-2xl font-black text-blue-600 dark:text-blue-500">{{ $orders->count() }}</p>
                     </div>
-                    <div class="bg-green-50 rounded-2xl p-4 border border-green-100">
-                        <p class="text-xs font-semibold text-green-400 uppercase tracking-wide mb-1">Products</p>
-                        <p class="text-2xl font-bold text-green-700">{{ $products->count() }}</p>
+                    <div class="bg-green-50 dark:bg-green-500/10 rounded-2xl p-4 border border-green-200 dark:border-green-500/20 shadow-sm transition-all hover:shadow-md">
+                        <p class="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wide mb-1">Products</p>
+                        <p class="text-2xl font-black text-green-600 dark:text-green-500">{{ $products->count() }}</p>
                     </div>
-                    <div class="bg-purple-50 rounded-2xl p-4 border border-purple-100">
-                        <p class="text-xs font-semibold text-purple-400 uppercase tracking-wide mb-1">Categories</p>
-                        <p class="text-2xl font-bold text-purple-700">{{ $categories->count() }}</p>
+                    <div class="bg-purple-50 dark:bg-purple-500/10 rounded-2xl p-4 border border-purple-200 dark:border-purple-500/20 shadow-sm transition-all hover:shadow-md">
+                        <p class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wide mb-1">Categories</p>
+                        <p class="text-2xl font-black text-purple-600 dark:text-purple-500">{{ $categories->count() }}</p>
                     </div>
-                    <div class="bg-amber-50 rounded-2xl p-4 border border-amber-100 cursor-pointer hover:border-amber-300 transition"
+                    <div class="bg-amber-50 dark:bg-amber-500/10 rounded-2xl p-4 border border-amber-200 dark:border-amber-500/20 cursor-pointer shadow-sm transition-all hover:shadow-md hover:border-amber-400"
                          @click="activeTab = 'sales'">
-                        <p class="text-xs font-semibold text-amber-500 uppercase tracking-wide mb-1">Today Sales</p>
-                        <p class="text-2xl font-bold text-amber-700">${{ number_format($dailySalesTotal, 2) }}</p>
-                        <p class="text-[10px] text-amber-400 mt-1">{{ now()->format('d M Y') }}</p>
+                        <p class="text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wide mb-1">Today Sales</p>
+                        <p class="text-2xl font-black text-amber-600 dark:text-amber-500">${{ number_format($dailySalesTotal, 2) }}</p>
+                        <p class="text-[10px] text-amber-500/70 dark:text-amber-400 mt-1">{{ now()->format('d M Y') }}</p>
                     </div>
-                    <div class="bg-rose-50 rounded-2xl p-4 border border-rose-100 cursor-pointer hover:border-rose-300 transition"
+                    <div class="bg-rose-50 dark:bg-rose-500/10 rounded-2xl p-4 border border-rose-200 dark:border-rose-500/20 cursor-pointer shadow-sm transition-all hover:shadow-md hover:border-rose-400"
                          @click="activeTab = 'sales'">
-                        <p class="text-xs font-semibold text-rose-400 uppercase tracking-wide mb-1">Month Sales</p>
-                        <p class="text-2xl font-bold text-rose-700">${{ number_format($monthlySalesTotal, 2) }}</p>
-                        <p class="text-[10px] text-rose-400 mt-1">{{ now()->format('M Y') }}</p>
+                        <p class="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide mb-1">Month Sales</p>
+                        <p class="text-2xl font-black text-rose-600 dark:text-rose-500">${{ number_format($monthlySalesTotal, 2) }}</p>
+                        <p class="text-[10px] text-rose-500/70 dark:text-rose-400 mt-1">{{ now()->format('M Y') }}</p>
                     </div>
                 </div>
 
-                {{-- ===== TABS ===== --}}
-                <div class="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6 no-print overflow-x-auto no-scrollbar">
+                <!-- TABS -->
+                <div class="flex gap-1 bg-[var(--admin-bg-primary)] border border-[var(--admin-border)] rounded-xl p-1 mb-6 no-print overflow-x-auto no-scrollbar">
                     @foreach(['reservations','orders','products','categories','sales'] as $tab)
                         <button @click="activeTab = '{{ $tab }}'"
-                            :class="activeTab === '{{ $tab }}' ? 'bg-white text-[#EE6D3C] shadow font-bold' : 'text-gray-500 hover:text-gray-700'"
+                            :class="activeTab === '{{ $tab }}' ? 'bg-[var(--admin-card-bg)] text-[#EE6D3C] shadow font-bold' : 'text-[var(--admin-text-secondary)] hover:text-[#EE6D3C]'"
                             class="flex-1 min-w-[110px] py-2 px-4 rounded-lg text-sm transition capitalize whitespace-nowrap flex items-center justify-center gap-1.5">
                             @if($tab === 'sales')
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -343,21 +345,21 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     @endforeach
                 </div>
 
-                {{-- ===== RESERVATIONS ===== --}}
+                <!-- RESERVATIONS -->
                 <div x-show="activeTab === 'reservations'" x-transition>
                     <div class="flex flex-wrap gap-3 mb-4">
                         <div class="relative w-full md:w-72">
                             <input type="text" placeholder="Search reservation..." x-model="resSearch"
-                                class="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-gray-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                class="w-full pl-4 pr-10 py-2.5 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] placeholder-[var(--admin-text-secondary)]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-3 text-[var(--admin-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
                     </div>
-                    <div class="w-full overflow-x-auto rounded-xl border border-gray-100">
+                    <div class="w-full overflow-x-auto rounded-xl border border-[var(--admin-border)]">
                         <table class="w-full text-left text-sm">
-                            <thead class="bg-gray-50">
-                                <tr class="border-b text-gray-500 uppercase text-xs">
+                            <thead class="bg-[var(--admin-bg-primary)]">
+                                <tr class="border-b border-[var(--admin-border)] text-[var(--admin-text-secondary)] uppercase text-xs">
                                     <th class="px-4 py-3">ID</th>
                                     <th class="px-4 py-3">Name</th>
                                     <th class="px-4 py-3 hidden md:table-cell">Date & Time</th>
@@ -370,14 +372,14 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                     <tr><td colspan="5" class="p-10 text-center text-gray-400 italic text-sm">No reservation data found</td></tr>
                                 </template>
                                 <template x-for="res in pagedReservations" :key="res.id">
-                                    <tr class="hover:bg-orange-50/40 transition">
-                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono" x-text="'#' + res.id"></td>
-                                        <td class="px-4 py-3 font-medium text-gray-800" x-text="res.name"></td>
+                                    <tr class="hover:bg-orange-50 dark:hover:bg-orange-50/10 transition">
+                                        <td class="px-4 py-3 text-[var(--admin-text-secondary)] text-xs font-mono" x-text="'#' + res.id"></td>
+                                        <td class="px-4 py-3 font-medium text-[var(--admin-text-primary)]" x-text="res.name"></td>
                                         <td class="px-4 py-3 hidden md:table-cell">
-                                            <span class="text-gray-700" x-text="res.date"></span>
-                                            <span class="ml-1 text-xs text-gray-400" x-text="res.time"></span>
+                                            <span class="text-[var(--admin-text-primary)]" x-text="res.date"></span>
+                                            <span class="ml-1 text-xs text-[var(--admin-text-secondary)]" x-text="res.time"></span>
                                         </td>
-                                        <td class="px-4 py-3 hidden md:table-cell text-gray-500 text-sm" x-text="res.phone"></td>
+                                        <td class="px-4 py-3 hidden md:table-cell text-[var(--admin-text-secondary)] text-sm" x-text="res.phone"></td>
                                         <td class="px-4 py-3 hidden lg:table-cell">
                                             <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold" x-text="'Table ' + res.table"></span>
                                         </td>
@@ -386,7 +388,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                             </tbody>
                         </table>
                     </div>
-                    {{-- Reservations Pagination --}}
+                    <!-- Reservations Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredReservations.length
@@ -394,39 +396,39 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                 : ''"></p>
                         <div x-show="resTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
                             <button @click="resPage--" :disabled="resPage === 1"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">‹</button>
                             <template x-for="p in resPageNums" :key="p">
                                 <button @click="resPage = p"
-                                    :class="resPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    :class="resPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)] border-[var(--admin-border)] hover:bg-orange-50/10'"
                                     class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
                             </template>
                             <button @click="resPage++" :disabled="resPage === resTotalPages"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">›</button>
                         </div>
                     </div>
                 </div>
 
-                {{-- ===== ORDERS ===== --}}
+                <!-- ORDERS -->
                 <div x-show="activeTab === 'orders'" x-transition>
                     <div class="flex flex-wrap gap-3 mb-4">
                         <div class="relative w-full md:w-72">
                             <input type="text" placeholder="Search order..." x-model="orderSearch"
-                                class="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-gray-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                class="w-full pl-4 pr-10 py-2.5 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] placeholder-[var(--admin-text-secondary)]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-3 text-[var(--admin-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
-                        <select x-model="selectedStatus" class="py-2.5 px-4 border border-gray-200 rounded-xl text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-orange-200">
+                        <select x-model="selectedStatus" class="py-2.5 px-4 border border-[var(--admin-border)] rounded-xl text-sm bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] outline-none focus:ring-2 focus:ring-orange-200">
                             <option value="All">All Statuses</option>
                             @foreach($orders->pluck('status')->unique() as $status)
                                 <option value="{{ $status }}">{{ ucfirst($status) }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="w-full overflow-x-auto rounded-xl border border-gray-100">
+                    <div class="w-full overflow-x-auto rounded-xl border border-[var(--admin-border)]">
                         <table class="w-full text-left text-sm">
-                            <thead class="bg-gray-50">
-                                <tr class="border-b text-gray-500 uppercase text-xs">
+                            <thead class="bg-[var(--admin-bg-primary)]">
+                                <tr class="border-b border-[var(--admin-border)] text-[var(--admin-text-secondary)] uppercase text-xs">
                                     <th class="px-4 py-3">ID</th>
                                     <th class="px-4 py-3">Items</th>
                                     <th class="px-4 py-3 hidden md:table-cell">Date</th>
@@ -439,24 +441,24 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                     <tr><td colspan="5" class="p-10 text-center text-gray-400 italic text-sm">No order data found</td></tr>
                                 </template>
                                 <template x-for="order in pagedOrders" :key="order.id">
-                                    <tr class="hover:bg-orange-50/40 transition">
-                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono" x-text="'#' + order.id"></td>
+                                    <tr class="hover:bg-orange-50 dark:hover:bg-orange-50/40 transition">
+                                        <td class="px-4 py-3 text-[var(--admin-text-secondary)] text-xs font-mono" x-text="'#' + order.id"></td>
                                         <td class="px-4 py-3">
                                             <template x-if="order.items">
                                                 <div>
-                                                    <div class="text-sm font-medium text-gray-800" x-text="order.items"></div>
-                                                    <div class="text-xs text-gray-400 mt-0.5" x-text="order.itemCount + (order.itemCount === 1 ? ' item' : ' items')"></div>
+                                                    <div class="text-sm font-medium text-[var(--admin-text-primary)]" x-text="order.items"></div>
+                                                    <div class="text-xs text-[var(--admin-text-secondary)] mt-0.5" x-text="order.itemCount + (order.itemCount === 1 ? ' item' : ' items')"></div>
                                                 </div>
                                             </template>
                                             <template x-if="!order.items">
-                                                <span class="text-gray-400 text-xs italic">No items</span>
+                                                <span class="text-[var(--admin-text-secondary)] text-xs italic">No items</span>
                                             </template>
                                         </td>
-                                        <td class="px-4 py-3 hidden md:table-cell text-gray-600 text-sm">
-                                            <span x-text="order.date"></span>
-                                            <div class="text-xs text-gray-400" x-text="order.time"></div>
+                                        <td class="px-4 py-3 hidden md:table-cell text-[var(--admin-text-secondary)] text-sm">
+                                            <span class="text-[var(--admin-text-primary)]" x-text="order.date"></span>
+                                            <div class="text-xs text-[var(--admin-text-secondary)]" x-text="order.time"></div>
                                         </td>
-                                        <td class="px-4 py-3 hidden md:table-cell font-semibold text-gray-800"
+                                        <td class="px-4 py-3 hidden md:table-cell font-semibold text-[var(--admin-text-primary)]"
                                             x-text="'$' + order.total.toFixed(2)"></td>
                                         <td class="px-4 py-3">
                                             <span class="px-3 py-1 rounded-full text-xs font-bold"
@@ -465,7 +467,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                                     'bg-blue-100 text-blue-700':    order.status === 'confirmed',
                                                     'bg-green-100 text-green-700':  order.status === 'completed',
                                                     'bg-red-100 text-red-700':      order.status === 'cancelled',
-                                                    'bg-gray-100 text-gray-700':    !['pending','confirmed','completed','cancelled'].includes(order.status)
+                                                    'bg-[var(--admin-bg-primary)] text-[var(--admin-text-secondary)]': !['pending','confirmed','completed','cancelled'].includes(order.status)
                                                 }"
                                                 x-text="order.status.charAt(0).toUpperCase() + order.status.slice(1)"></span>
                                         </td>
@@ -474,7 +476,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                             </tbody>
                         </table>
                     </div>
-                    {{-- Orders Pagination --}}
+                    <!-- Orders Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredOrders.length
@@ -482,39 +484,39 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                 : ''"></p>
                         <div x-show="orderTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
                             <button @click="orderPage--" :disabled="orderPage === 1"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">‹</button>
                             <template x-for="p in orderPageNums" :key="p">
                                 <button @click="orderPage = p"
-                                    :class="orderPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    :class="orderPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)] border border-[var(--admin-border)] hover:bg-orange-50/10'"
                                     class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
                             </template>
                             <button @click="orderPage++" :disabled="orderPage === orderTotalPages"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">›</button>
                         </div>
                     </div>
                 </div>
 
-                {{-- ===== PRODUCTS ===== --}}
+                <!-- PRODUCTS -->
                 <div x-show="activeTab === 'products'" x-transition>
                     <div class="flex flex-wrap gap-3 mb-4">
                         <div class="relative w-full md:w-72">
                             <input type="text" placeholder="Search product..." x-model="productSearch"
-                                class="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-gray-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                class="w-full pl-4 pr-10 py-2.5 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] placeholder-[var(--admin-text-secondary)]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-3 text-[var(--admin-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
-                        <select x-model="selectedCategory" class="py-2.5 px-4 border border-gray-200 rounded-xl text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-orange-200">
+                        <select x-model="selectedCategory" class="py-2.5 px-4 border border-[var(--admin-border)] rounded-xl text-sm bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] outline-none focus:ring-2 focus:ring-orange-200">
                             <option value="All">All Categories</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->name }}">{{ $cat->name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="w-full overflow-x-auto rounded-xl border border-gray-100">
+                    <div class="w-full overflow-x-auto rounded-xl border border-[var(--admin-border)]">
                         <table class="w-full text-left text-sm">
-                            <thead class="bg-gray-50">
-                                <tr class="border-b text-gray-500 uppercase text-xs">
+                            <thead class="bg-[var(--admin-bg-primary)]">
+                                <tr class="border-b border-[var(--admin-border)] text-[var(--admin-text-secondary)] uppercase text-xs">
                                     <th class="px-4 py-3">ID</th>
                                     <th class="px-4 py-3">Product</th>
                                     <th class="px-4 py-3 hidden md:table-cell">Category</th>
@@ -528,17 +530,17 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                     <tr><td colspan="6" class="p-10 text-center text-gray-400 italic text-sm">No product data found</td></tr>
                                 </template>
                                 <template x-for="product in pagedProducts" :key="product.id">
-                                    <tr class="hover:bg-orange-50/40 transition">
-                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono" x-text="'#' + product.id"></td>
+                                    <tr class="hover:bg-orange-50 dark:hover:bg-orange-50/40 transition">
+                                        <td class="px-4 py-3 text-[var(--admin-text-secondary)] text-xs font-mono" x-text="'#' + product.id"></td>
                                         <td class="px-4 py-3">
-                                            <div class="font-medium text-gray-800" x-text="product.name"></div>
-                                            <div x-show="product.description" class="text-xs text-gray-400 mt-0.5 line-clamp-1" x-text="product.description"></div>
+                                            <div class="font-medium text-[var(--admin-text-primary)]" x-text="product.name"></div>
+                                            <div x-show="product.description" class="text-xs text-[var(--admin-text-secondary)] mt-0.5 line-clamp-1" x-text="product.description"></div>
                                         </td>
                                         <td class="px-4 py-3 hidden md:table-cell">
                                             <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold" x-text="product.category"></span>
                                         </td>
-                                        <td class="px-4 py-3 hidden md:table-cell font-semibold text-gray-800" x-text="'$' + product.price.toFixed(2)"></td>
-                                        <td class="px-4 py-3 hidden lg:table-cell text-gray-500" x-text="'$' + product.cost.toFixed(2)"></td>
+                                        <td class="px-4 py-3 hidden md:table-cell font-semibold text-[var(--admin-text-primary)]" x-text="'$' + product.price.toFixed(2)"></td>
+                                        <td class="px-4 py-3 hidden lg:table-cell text-[var(--admin-text-secondary)]" x-text="'$' + product.cost.toFixed(2)"></td>
                                         <td class="px-4 py-3 hidden lg:table-cell">
                                             <span class="px-2 py-0.5 rounded-lg text-xs font-bold"
                                                 :class="product.qty > 10 ? 'bg-green-100 text-green-700' : (product.qty > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700')"
@@ -549,7 +551,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                             </tbody>
                         </table>
                     </div>
-                    {{-- Products Pagination --}}
+                    <!-- Products Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredProducts.length
@@ -557,33 +559,33 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                 : ''"></p>
                         <div x-show="productTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
                             <button @click="productPage--" :disabled="productPage === 1"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">‹</button>
                             <template x-for="p in productPageNums" :key="p">
                                 <button @click="productPage = p"
-                                    :class="productPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    :class="productPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)] border border-[var(--admin-border)] hover:bg-orange-50/10'"
                                     class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
                             </template>
                             <button @click="productPage++" :disabled="productPage === productTotalPages"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">›</button>
                         </div>
                     </div>
                 </div>
 
-                {{-- ===== CATEGORIES ===== --}}
+                <!-- CATEGORIES -->
                 <div x-show="activeTab === 'categories'" x-transition>
                     <div class="flex flex-wrap gap-3 mb-4">
                         <div class="relative w-full md:w-72">
                             <input type="text" placeholder="Search category..." x-model="categorySearch"
-                                class="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-gray-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                class="w-full pl-4 pr-10 py-2.5 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] placeholder-[var(--admin-text-secondary)]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-3 top-3 text-[var(--admin-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
                     </div>
-                    <div class="w-full overflow-x-auto rounded-xl border border-gray-100">
+                    <div class="w-full overflow-x-auto rounded-xl border border-[var(--admin-border)]">
                         <table class="w-full text-left text-sm">
-                            <thead class="bg-gray-50">
-                                <tr class="border-b text-gray-500 uppercase text-xs">
+                            <thead class="bg-[var(--admin-bg-primary)]">
+                                <tr class="border-b border-[var(--admin-border)] text-[var(--admin-text-secondary)] uppercase text-xs">
                                     <th class="px-4 py-3">ID</th>
                                     <th class="px-4 py-3">Category Name</th>
                                     <th class="px-4 py-3 hidden md:table-cell">Total Products</th>
@@ -595,19 +597,19 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                     <tr><td colspan="4" class="p-10 text-center text-gray-400 italic text-sm">No category data found</td></tr>
                                 </template>
                                 <template x-for="cat in pagedCategories" :key="cat.id">
-                                    <tr class="hover:bg-orange-50/40 transition">
-                                        <td class="px-4 py-3 text-gray-400 text-xs font-mono" x-text="'#' + cat.id"></td>
-                                        <td class="px-4 py-3 font-medium text-gray-800" x-text="cat.name"></td>
-                                        <td class="px-4 py-3 hidden md:table-cell">
-                                            <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold" x-text="cat.count + ' items'"></span>
-                                        </td>
+                                    <tr class="hover:bg-orange-50 dark:hover:bg-orange-50/10 transition">
+                                         <td class="px-4 py-3 text-[var(--admin-text-secondary)] text-xs font-mono" x-text="'#' + cat.id"></td>
+                                         <td class="px-4 py-3 font-medium text-[var(--admin-text-primary)]" x-text="cat.name"></td>
+                                         <td class="px-4 py-3 hidden md:table-cell">
+                                             <span class="bg-orange-100 dark:bg-orange-500/10 text-orange-600 dark:text-[#EE6D3C] px-3 py-1 rounded-full text-xs font-bold border border-orange-200 dark:border-[#EE6D3C]/20" x-text="cat.count + ' items'"></span>
+                                         </td>
                                         <td class="px-4 py-3 hidden lg:table-cell text-gray-400 text-xs" x-text="cat.created_at"></td>
                                     </tr>
                                 </template>
                             </tbody>
                         </table>
                     </div>
-                    {{-- Categories Pagination --}}
+                    <!-- Categories Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredCategories.length
@@ -615,64 +617,64 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                 : ''"></p>
                         <div x-show="catTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
                             <button @click="catPage--" :disabled="catPage === 1"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">‹</button>
                             <template x-for="p in catPageNums" :key="p">
                                 <button @click="catPage = p"
-                                    :class="catPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    :class="catPage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)] border border-[var(--admin-border)] hover:bg-orange-50/10'"
                                     class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
                             </template>
                             <button @click="catPage++" :disabled="catPage === catTotalPages"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">›</button>
                         </div>
                     </div>
                 </div>
 
-                {{-- ===== SALES ===== --}}
+                <!-- SALES -->
                 <div x-show="activeTab === 'sales'" x-transition>
 
-                    {{-- Summary Strip --}}
+                    <!-- Summary Strip -->
                     <div class="grid grid-cols-3 gap-3 mb-6">
-                        <div class="relative overflow-hidden rounded-2xl bg-[#FFF8F5] border border-[#FDDDD0] p-4">
+                        <div class="relative overflow-hidden rounded-2xl bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 p-4">
                             <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-[#EE6D3C]/10"></div>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-[#EE6D3C] mb-1">Today</p>
-                            <p class="text-2xl font-black text-gray-900">${{ number_format($todayTotal, 2) }}</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:text-[#EE6D3C] mb-1">Today</p>
+                            <p class="text-2xl font-black text-[var(--admin-text-primary)]">${{ number_format($todayTotal, 2) }}</p>
                             <div class="flex items-center gap-1.5 mt-2">
-                                <span class="inline-flex items-center gap-1 bg-[#EE6D3C]/10 text-[#EE6D3C] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                <span class="inline-flex items-center gap-1 bg-orange-100 dark:bg-[#EE6D3C]/10 text-orange-600 dark:text-[#EE6D3C] text-[10px] font-bold px-2 py-0.5 rounded-full">
                                     <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                                     {{ $todayCount }} orders
                                 </span>
-                                <span class="text-[10px] text-gray-400">{{ now()->format('d M') }}</span>
+                                <span class="text-[10px] text-[var(--admin-text-secondary)]">{{ now()->format('d M') }}</span>
                             </div>
                         </div>
-                        <div class="relative overflow-hidden rounded-2xl bg-[#F5F8FF] border border-[#DDEAFF] p-4">
+                        <div class="relative overflow-hidden rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 p-4">
                             <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-blue-500/10"></div>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-1">{{ now()->format('M Y') }}</p>
-                            <p class="text-2xl font-black text-gray-900">${{ number_format($monthlySalesTotal, 2) }}</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-blue-600 dark:text-blue-500 mb-1">{{ now()->format('M Y') }}</p>
+                            <p class="text-2xl font-black text-[var(--admin-text-primary)]">${{ number_format($monthlySalesTotal, 2) }}</p>
                             <div class="flex items-center gap-1.5 mt-2">
-                                <span class="inline-flex items-center gap-1 bg-blue-500/10 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $monthlyCount }} orders</span>
+                                <span class="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-500 text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $monthlyCount }} orders</span>
                             </div>
                         </div>
-                        <div class="relative overflow-hidden rounded-2xl bg-gray-900 border border-gray-800 p-4">
+                        <div class="relative overflow-hidden rounded-2xl bg-[var(--admin-text-primary)] border border-[var(--admin-border)] p-4 shadow-sm">
                             <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-white/5"></div>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Total Sales</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-[var(--admin-text-secondary)] mb-1">Total Sales</p>
                             <p class="text-2xl font-black text-[#EE6D3C]">${{ number_format($grandTotal, 2) }}</p>
                             <div class="flex items-center gap-1.5 mt-2">
-                                <span class="inline-flex items-center gap-1 bg-white/10 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $completedOrders->count() }} completed</span>
+                                <span class="inline-flex items-center gap-1 bg-white/10 text-[var(--admin-text-secondary)] text-[10px] font-bold px-2 py-0.5 rounded-full">{{ $completedOrders->count() }} completed</span>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Search & Date Filter --}}
+                    <!-- Search & Date Filter -->
                     <div class="flex flex-wrap items-center gap-2 mb-5">
                         <div class="relative flex-1 min-w-[180px] max-w-xs">
-                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--admin-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                             <input type="text" placeholder="Search order ID…" x-model="saleSearch"
-                                class="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm outline-none focus:ring-2 focus:ring-[#EE6D3C]/30 focus:border-[#EE6D3C]/50 transition">
+                                class="w-full pl-9 pr-4 py-2 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] text-sm outline-none focus:ring-2 focus:ring-[#EE6D3C]/30 focus:border-[#EE6D3C]/50 transition placeholder-[var(--admin-text-secondary)]">
                         </div>
                         <select x-model="selectedSaleDate"
-                            class="py-2 px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm outline-none focus:ring-2 focus:ring-[#EE6D3C]/30 focus:border-[#EE6D3C]/50 transition">
+                            class="py-2 px-3 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] text-sm outline-none focus:ring-2 focus:ring-[#EE6D3C]/30 focus:border-[#EE6D3C]/50 transition">
                             <option value="All">📅 All Dates</option>
                             @foreach($salesByDate->keys() as $dk)
                                 <option value="{{ $dk }}">{{ \Carbon\Carbon::parse($dk)->format('d M Y') }}</option>
@@ -680,11 +682,11 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </select>
                     </div>
 
-                    {{-- Sales Table --}}
-                    <div class="w-full overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
+                    <!-- Sales Table -->
+                    <div class="w-full overflow-x-auto rounded-2xl border border-[var(--admin-border)] shadow-sm">
                         <table class="w-full text-left text-sm">
-                            <thead class="bg-gray-50">
-                                <tr class="border-b text-gray-500 uppercase text-xs">
+                            <thead class="bg-[var(--admin-bg-primary)]">
+                                <tr class="border-b border-[var(--admin-border)] text-[var(--admin-text-secondary)] uppercase text-xs">
                                     <th class="px-4 py-3">Order ID</th>
                                     <th class="px-4 py-3 hidden md:table-cell">Date & Time</th>
                                     <th class="px-4 py-3 text-right">Total</th>
@@ -695,18 +697,18 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                     <tr><td colspan="3" class="p-10 text-center text-gray-400 italic text-sm">No completed sales yet</td></tr>
                                 </template>
                                 <template x-for="sale in pagedSales" :key="sale.id">
-                                    <tr class="hover:bg-[#FFF8F5] transition">
+                                    <tr class="hover:bg-orange-50 dark:hover:bg-orange-50/10 transition">
                                         <td class="px-4 py-3">
-                                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#FFE4DB] text-[10px] font-black text-[#EE6D3C]"
+                                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-orange-100/10 border border-orange-500/20 text-[10px] font-black text-[#EE6D3C]"
                                                 x-text="'#' + sale.id"></span>
                                         </td>
                                         <td class="px-4 py-3 hidden md:table-cell">
-                                            <p class="text-gray-700 text-sm font-medium" x-text="sale.date"></p>
-                                            <p class="text-xs text-gray-400" x-text="sale.time"></p>
+                                            <p class="text-[var(--admin-text-primary)] text-sm font-medium" x-text="sale.date"></p>
+                                            <p class="text-xs text-[var(--admin-text-secondary)]" x-text="sale.time"></p>
                                         </td>
                                         <td class="px-4 py-3 text-right">
-                                            <p class="text-sm font-black text-gray-900" x-text="'$' + sale.total.toFixed(2)"></p>
-                                            <span class="text-[10px] font-bold text-green-500 bg-green-50 px-1.5 py-0.5 rounded-full">Paid</span>
+                                            <p class="text-sm font-black text-[var(--admin-text-primary)]" x-text="'$' + sale.total.toFixed(2)"></p>
+                                            <span class="text-[10px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-full border border-green-500/20">Paid</span>
                                         </td>
                                     </tr>
                                 </template>
@@ -726,7 +728,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </table>
                     </div>
 
-                    {{-- Sales Pagination --}}
+                    <!-- Sales Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredSales.length
@@ -734,23 +736,23 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                 : ''"></p>
                         <div x-show="saleTotalPages > 1" class="flex items-center gap-1.5 flex-wrap">
                             <button @click="salePage--" :disabled="salePage === 1"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">‹</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">‹</button>
                             <template x-for="p in salePageNums" :key="p">
                                 <button @click="salePage = p"
-                                    :class="salePage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50'"
+                                    :class="salePage === p ? 'bg-[#EE6D3C] text-white border-[#EE6D3C] shadow-md' : 'bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)] border border-[var(--admin-border)] hover:bg-orange-50/10'"
                                     class="w-9 h-9 rounded-lg border font-bold transition text-sm"><span x-text="p"></span></button>
                             </template>
                             <button @click="salePage++" :disabled="salePage === saleTotalPages"
-                                class="w-9 h-9 rounded-lg bg-white border border-gray-300 hover:bg-orange-50 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold text-gray-600 flex items-center justify-center">›</button>
+                                class="w-9 h-9 rounded-lg bg-[var(--admin-card-bg)] border border-[var(--admin-border)] hover:bg-orange-50 dark:hover:bg-orange-50/10 transition font-bold text-[var(--admin-text-primary)] flex items-center justify-center">›</button>
                         </div>
                     </div>
 
-                </div>{{-- end sales --}}
+                </div><!-- end sales -->
 
             </div>
         </main>
 
-        {{-- ===== EXPORT CONFIRM MODAL ===== --}}
+        <!-- EXPORT CONFIRM MODAL -->
         <div id="export-modal" :class="exportModal ? 'open' : ''" @click.self="exportModal = false">
             <div class="modal-box">
                 <div class="flex items-center gap-3 mb-4">
@@ -760,27 +762,27 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </svg>
                     </div>
                     <div>
-                        <h3 class="font-bold text-gray-900 text-base">Confirm Export</h3>
-                        <p class="text-xs text-gray-400">This will download your report</p>
+                        <h3 class="font-bold text-[var(--admin-text-primary)] text-base">Confirm Export</h3>
+                        <p class="text-xs text-[var(--admin-text-secondary)]">This will download your report</p>
                     </div>
                 </div>
-                <div class="bg-gray-50 rounded-xl p-4 mb-5 border border-gray-100">
+                <div class="bg-[var(--admin-bg-primary)] rounded-xl p-4 mb-5 border border-[var(--admin-border)]">
                     <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">Format</span>
-                        <span class="font-semibold text-gray-800" x-text="exportLabel"></span>
+                        <span class="text-[var(--admin-text-secondary)]">Format</span>
+                        <span class="font-semibold text-[var(--admin-text-primary)]" x-text="exportLabel"></span>
                     </div>
                     <div class="flex items-center justify-between text-sm mt-2">
-                        <span class="text-gray-500">Section</span>
+                        <span class="text-[var(--admin-text-secondary)]">Section</span>
                         <span class="font-semibold text-[#EE6D3C] capitalize" x-text="activeTab"></span>
                     </div>
                     <div class="flex items-center justify-between text-sm mt-2">
-                        <span class="text-gray-500">Generated</span>
-                        <span class="font-semibold text-gray-800">{{ now()->format('d M Y, h:i A') }}</span>
+                        <span class="text-[var(--admin-text-secondary)]">Generated</span>
+                        <span class="font-semibold text-[var(--admin-text-primary)]">{{ now()->format('d M Y, h:i A') }}</span>
                     </div>
                 </div>
                 <div class="flex gap-2">
                     <button @click="exportModal = false"
-                        class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Cancel</button>
+                        class="flex-1 py-2.5 rounded-xl border border-[var(--admin-border)] text-sm font-semibold text-[var(--admin-text-secondary)] hover:bg-[var(--admin-bg-primary)] transition">Cancel</button>
                     <button @click="confirmExport()"
                         class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition active:scale-95"
                         :class="exportColorClass">Export now</button>
@@ -788,7 +790,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
             </div>
         </div>
 
-        {{-- ===== TOAST ===== --}}
+        <!-- TOAST -->
         <div id="toast" class="no-print">
             <div class="flex items-center gap-3 bg-gray-900 text-white px-5 py-3.5 rounded-2xl shadow-xl text-sm font-medium">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -798,7 +800,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
             </div>
         </div>
 
-        {{-- ===== PRINTABLE (unchanged — uses Blade for full data) ===== --}}
+        <!-- PRINTABLE (unchanged — uses Blade for full data) -->
         <div id="printable-invoice" class="hidden">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold uppercase underline">FastBite — Full Report</h1>

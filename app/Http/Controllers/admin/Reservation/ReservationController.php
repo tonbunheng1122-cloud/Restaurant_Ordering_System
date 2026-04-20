@@ -30,6 +30,7 @@ class ReservationController extends Controller
             'phone_number' => 'required|string|max:20',
             'date'         => 'required|date',
             'time'         => 'required',
+            'guest_count'  => 'required|integer|min:1|max:20',
             'table_id'     => 'required|integer',
         ]);
 
@@ -53,6 +54,7 @@ class ReservationController extends Controller
             'phone_number' => 'required|string|max:20',
             'date'         => 'required|date',
             'time'         => 'required',
+            'guest_count'  => 'required|integer|min:1|max:20',
             'table_id'     => 'required|integer',
         ]);
 

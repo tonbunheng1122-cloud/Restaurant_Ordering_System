@@ -1,3 +1,4 @@
+@include('partials.theme-head')
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <style>
@@ -8,8 +9,8 @@
     [x-cloak] { display: none !important; }
 
     .stat-card {
-        background: white;
-        border: 1px solid #e5e7eb;
+        background: var(--admin-card-bg);
+        border: 1px solid var(--admin-border);
         transition: all 0.2s ease;
     }
     .stat-card:hover {
@@ -33,7 +34,7 @@
 
 <title>FastBite | Dashboard</title>
 
-<div class="bg-[#FFE4DB] min-h-screen" x-data="dashboardData()" x-init="init()">
+<div class="bg-[var(--admin-bg-primary)] min-h-screen text-[var(--admin-text-primary)]" x-data="dashboardData()" x-init="init()">
     <div class="flex flex-col md:flex-row md:h-screen md:p-4 md:gap-6 overflow-hidden relative">
 
         <!-- Sidebar (includes its own mobile header & overlay) -->
@@ -43,23 +44,23 @@
         <main class="flex-1 overflow-y-auto px-3 pb-4 md:px-0 md:pr-2 custom-scrollbar">
 
             <!-- Header Card -->
-            <div class="bg-white rounded-lg shadow-sm border border-orange-100 p-6 md:p-8 mb-6 mt-3 md:mt-0">
+            <div class="bg-[var(--admin-card-bg)] rounded-2xl shadow-sm border border-[var(--admin-border)] p-6 md:p-8 mb-6 mt-3 md:mt-0">
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div class="flex items-center gap-4">
-                        <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-orange-50 text-[#EE6D3C]">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-orange-50/10 text-[#EE6D3C]">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
-                            <p class="text-gray-500 text-sm">Welcome back, {{ Auth::user()->username ?? 'Admin' }}! Here's a summary of your restaurant's performance.</p>
+                            <h2 class="text-2xl font-bold text-[var(--admin-text-primary)]">Dashboard Overview</h2>
+                            <p class="text-[var(--admin-text-secondary)] text-sm">Welcome back, {{ Auth::user()->username ?? 'Admin' }}! Here's a summary of your restaurant's performance.</p>
                         </div>
                     </div>
                     <div class="flex flex-col sm:flex-row items-center gap-3">
-                        <div class="bg-gray-50 rounded-xl px-4 py-2 text-sm text-gray-600">
+                        <div class="bg-[var(--admin-bg-primary)] border border-[var(--admin-border)] rounded-xl px-4 py-2 text-sm text-[var(--admin-text-secondary)]">
                             <span>Last updated: </span>
-                            <span class="font-semibold" x-text="currentTime"></span>
+                            <span class="font-semibold text-[var(--admin-text-primary)]" x-text="currentTime"></span>
                         </div>
                     </div>
                 </div>
@@ -77,13 +78,13 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-600">Total Revenue</p>
-                                <p class="text-2xl font-bold text-gray-900">${{ number_format($totalRevenue, 2) }}</p>
+                                <p class="text-sm font-medium text-[var(--admin-text-secondary)]">Total Revenue</p>
+                                <p class="text-2xl font-bold text-[var(--admin-text-primary)]">${{ number_format($totalRevenue, 2) }}</p>
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium">
+                        <span class="text-xs px-2 py-1 rounded-full bg-green-100/10 text-green-500 font-medium border border-green-500/30">
                             +{{ $revenueChange }}% from yesterday
                         </span>
                     </div>
@@ -99,13 +100,13 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-600">Today's Orders</p>
-                                <p class="text-2xl font-bold text-gray-900">{{ $todayOrders }}</p>
+                                <p class="text-sm font-medium text-[var(--admin-text-secondary)]">Today's Orders</p>
+                                <p class="text-2xl font-bold text-[var(--admin-text-primary)]">{{ $todayOrders }}</p>
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                        <span class="text-xs px-2 py-1 rounded-full bg-blue-100/10 text-blue-500 font-medium border border-blue-500/30">
                             +{{ $ordersChange }}% from yesterday
                         </span>
                     </div>
@@ -121,30 +122,30 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-gray-600">Total Products</p>
-                                <p class="text-2xl font-bold text-gray-900">{{ $totalProducts }}</p>
+                                <p class="text-sm font-medium text-[var(--admin-text-secondary)]">Total Products</p>
+                                <p class="text-2xl font-bold text-[var(--admin-text-primary)]">{{ $totalProducts }}</p>
                             </div>
                         </div>
                     </div>
-                    <div class="text-xs text-gray-500">
+                    <div class="text-xs text-[var(--admin-text-secondary)] font-medium">
                         Across {{ $totalCategories }} categories
                     </div>
                 </div>
             </div>
 
             <!-- Charts and Recent Activity -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="grid grid-cols-1 gap-6 mb-8">
 
                 <!-- Sales Chart -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                <div class="bg-[var(--admin-card-bg)] rounded-lg shadow-sm border border-[var(--admin-border)] p-6">
                     <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900">Sales Overview</h3>
-                            <p class="text-sm text-gray-600">Last 30 days performance</p>
+                            <h3 class="text-lg font-bold text-[var(--admin-text-primary)]">Sales Overview</h3>
+                            <p class="text-sm text-[var(--admin-text-secondary)]">Last 30 days performance</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="w-3 h-3 rounded-full bg-[#EE6D3C]"></div>
-                            <span class="text-sm font-medium text-gray-700">Revenue</span>
+                            <span class="text-sm font-medium text-[var(--admin-text-secondary)]">Revenue</span>
                         </div>
                     </div>
                     <div class="chart-container">
@@ -152,45 +153,45 @@
                     </div>
                 </div>
 
-                <!-- Recent Products -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-900">Recent Products</h3>
-                            <p class="text-sm text-gray-600">Latest additions to your menu</p>
-                        </div>
-                        <a href="{{ route('menu.index') }}"
-                           class="text-sm font-medium text-[#EE6D3C] hover:text-orange-700 transition">
-                            Order now →
-                        </a>
+
+            <!-- Recent Products -->
+            <div class="bg-[var(--admin-card-bg)] rounded-2xl shadow-sm border border-[var(--admin-border)] p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-[var(--admin-text-primary)]">Recent Products</h3>
+                        <p class="text-sm text-[var(--admin-text-secondary)]">Latest additions to your menu</p>
                     </div>
-                    <div class="space-y-4 max-h-64 overflow-y-auto custom-scrollbar">
-                        @foreach($recentProducts as $product)
-                        <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition">
-                            <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
-                                @if($product->image)
-                                    <img src="/storage/{{ $product->image }}" alt="{{ $product->name }}"
-                                         class="w-full h-full object-cover">
-                                @else
-                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                @endif
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-gray-900">{{ $product->name }}</h4>
-                                <p class="text-sm text-gray-600">{{ $product->category->name ?? 'No Category' }}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-bold text-[#EE6D3C]">${{ number_format($product->price, 2) }}</p>
-                                <p class="text-xs text-gray-500">{{ $product->qty }} in stock</p>
-                            </div>
+                    <a href="{{ route('menu.index') }}"
+                       class="text-sm font-bold text-[#EE6D3C] hover:text-orange-600 transition tracking-wide uppercase">
+                        Order now →
+                    </a>
+                </div>
+                <div class="space-y-4 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                    @foreach($recentProducts as $product)
+                    <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-orange-50/5 transition border border-transparent hover:border-[var(--admin-border)]">
+                        <div class="w-12 h-12 rounded-xl bg-[var(--admin-bg-primary)] flex items-center justify-center overflow-hidden border border-[var(--admin-border)]">
+                            @if($product->image)
+                                <img src="/storage/{{ $product->image }}" alt="{{ $product->name }}"
+                                     class="w-full h-full object-cover">
+                            @else
+                                <svg class="w-6 h-6 text-[var(--admin-text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            @endif
                         </div>
-                        @endforeach
+                        <div class="flex-1">
+                            <h4 class="font-bold text-[var(--admin-text-primary)]">{{ $product->name }}</h4>
+                            <p class="text-sm text-[var(--admin-text-secondary)]">{{ $product->category->name ?? 'No Category' }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-[#EE6D3C] text-lg">${{ number_format($product->price, 2) }}</p>
+                            <p class="text-[10px] text-[var(--admin-text-secondary)] uppercase font-bold tracking-wider">{{ $product->qty }} in stock</p>
+                        </div>
                     </div>
+                    @endforeach
                 </div>
             </div>
-
+        </div>
         </main>
     </div>
 
@@ -215,6 +216,10 @@
                 },
 
                 initChart() {
+                    const isDark = document.documentElement.classList.contains('dark');
+                    const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                    const textColor = isDark ? '#9B8880' : '#6b7280';
+
                     const ctx = document.getElementById('salesChart').getContext('2d');
                     new Chart(ctx, {
                         type: 'line',
@@ -242,12 +247,16 @@
                             scales: {
                                 y: {
                                     beginAtZero: true,
-                                    grid: { color: 'rgba(0,0,0,0.05)' },
+                                    grid: { color: gridColor },
                                     ticks: {
+                                        color: textColor,
                                         callback: function(value) { return '$' + value; }
                                     }
                                 },
-                                x: { grid: { display: false } }
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { color: textColor }
+                                }
                             },
                             elements: { point: { hoverBorderWidth: 3 } }
                         }

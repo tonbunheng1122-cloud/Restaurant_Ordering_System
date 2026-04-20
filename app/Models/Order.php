@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 class Order extends Model
 {
     protected $fillable = [
+        'table_number',
         'total_amount',
         'status',
         'user_id'
