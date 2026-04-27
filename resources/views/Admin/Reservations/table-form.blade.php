@@ -8,11 +8,25 @@
 </style>
 <title>FastBite | Flavor Unleashed</title>
 
-<div class="bg-[var(--admin-bg-primary)] min-h-screen text-[var(--admin-text-primary)]" x-data="{ 
-    mobileMenuOpen: false, 
-    selectedTable: '{{ old('table_id', $reservation->table_id ?? '') }}', 
-    guestCount: '{{ old('guest_count', $reservation->guest_count ?? 1) }}' 
-}">
+@php
+    $initialTime = old('time', isset($reservation) ? \Illuminate\Support\Str::of($reservation->time)->substr(0, 5) : '');
+    $initialDate = old('date', $reservation->date ?? '');
+    $initialTable = old('table_id', $reservation->table_id ?? '');
+    $initialGuests = old('guest_count', $reservation->guest_count ?? 1);
+    $initialSlotAvailabilityActive = old('date') && old('time');
+@endphp
+
+<div class="bg-[var(--admin-bg-primary)] min-h-screen text-[var(--admin-text-primary)]"
+    x-data="reservationForm({
+        selectedTable: '{{ $initialTable }}',
+        guestCount: '{{ $initialGuests }}',
+        selectedDate: '{{ $initialDate }}',
+        selectedTime: '{{ $initialTime }}',
+        slotAvailabilityActive: {{ Js::from($initialSlotAvailabilityActive) }},
+        reservations: {{ Js::from($tableReservations ?? []) }},
+        currentReservationId: {{ Js::from($reservation->id ?? null) }},
+    })"
+    x-init="initialize()">
     <div class="flex flex-col md:flex-row md:h-screen md:p-4 md:gap-6 md:overflow-hidden relative">
 
         @include('components.asidebar')
@@ -21,6 +35,7 @@
             <div class="bg-[var(--admin-card-bg)] rounded-lg shadow-sm border border-[var(--admin-border)] p-6 md:p-8 mt-3 md:mt-0 mb-8">
 
                 @include('components.alerts')
+                <div x-effect="syncSelectedTable()"></div>
 
                 <!-- Header -->
                 <div class="flex items-center gap-3 mb-8">
@@ -64,6 +79,7 @@
                                 <div class="flex flex-col gap-2">
                                     <label class="font-bold text-[var(--admin-text-secondary)] text-sm uppercase tracking-wide">Guests *</label>
                                     <input type="number" name="guest_count" required min="1" max="20"
+                                        value="{{ $initialGuests }}"
                                         x-model="guestCount"
                                         class="w-full px-4 py-3 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)]
                                             @error('guest_count') border-red-400 @enderror">
@@ -75,7 +91,9 @@
                                  <div class="flex flex-col gap-2">
                                     <label class="font-bold text-[var(--admin-text-secondary)] text-sm uppercase tracking-wide">Date *</label>
                                     <input type="date" name="date" required
-                                        value="{{ old('date', $reservation->date ?? '') }}"
+                                        value="{{ $initialDate }}"
+                                        x-model="selectedDate"
+                                        @input="activateSlotAvailability()"
                                         class="w-full px-4 py-3 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)]
                                             @error('date') border-red-400 @enderror">
                                     @error('date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -83,7 +101,9 @@
                                 <div class="flex flex-col gap-2">
                                     <label class="font-bold text-[var(--admin-text-secondary)] text-sm uppercase tracking-wide">Time *</label>
                                     <input type="time" name="time" required
-                                        value="{{ old('time', $reservation->time ?? '') }}"
+                                        value="{{ $initialTime }}"
+                                        x-model="selectedTime"
+                                        @input="activateSlotAvailability()"
                                         class="w-full px-4 py-3 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm transition bg-[var(--admin-card-bg)] text-[var(--admin-text-primary)]
                                             @error('time') border-red-400 @enderror">
                                     @error('time') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -93,8 +113,10 @@
                             <div class="flex flex-col gap-2">
                                 <label class="font-bold text-[var(--admin-text-secondary)] text-sm uppercase tracking-wide">Selected Table *</label>
                                 <div class="relative">
-                                    <input type="text" name="table_id" required readonly
-                                        :value="selectedTable"
+                                    <input type="hidden" name="table_id" x-model="selectedTable">
+                                    <input type="text" required readonly
+                                        value="{{ $initialTable ? 'Table ' . $initialTable : '' }}"
+                                        :value="selectedTable ? 'Table ' + selectedTable : ''"
                                         placeholder="Click a table on the right →"
                                         class="w-full px-4 py-3 border border-[var(--admin-border)] rounded-xl outline-none focus:ring-2 focus:ring-orange-200 text-sm bg-[var(--admin-bg-primary)] cursor-default transition"
                                         :class="selectedTable ? 'border-orange-500 bg-orange-500/10 text-[#EE6D3C] font-black' : 'text-[var(--admin-text-secondary)]'">
@@ -106,14 +128,50 @@
                                         </span>
                                     </template>
                                 </div>
+                                <p class="text-xs text-[var(--admin-text-secondary)]" x-show="!selectedDate || !selectedTime">
+                                    Table colors are shown immediately. Choose date and time to check the exact slot.
+                                </p>
+                                <p class="text-xs font-semibold text-[var(--admin-text-secondary)]" x-show="selectedDate && selectedTime && selectedTable && !shouldUseSlotAvailability()">
+                                    Table <span x-text="selectedTable"></span> is selected. Change the date or time to check the exact reservation slot.
+                                </p>
+                                <p class="text-xs font-semibold text-emerald-600" x-show="shouldUseSlotAvailability() && selectedTable">
+                                    Table <span x-text="selectedTable"></span> is free for the selected reservation slot.
+                                </p>
+                                @error('table_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                         </div>
 
                         <div class="w-full lg:flex-1 bg-[var(--admin-bg-primary)] border border-[var(--admin-border)] rounded-2xl p-6 sm:p-8">
-                            <div class="flex items-center gap-3 mb-8">
+                            <div class="flex flex-wrap items-center gap-3 mb-6">
                                 <h3 class="font-bold text-[var(--admin-text-secondary)] text-sm uppercase tracking-wide">Select Table</h3>
-                                <span class="text-xs font-bold bg-[var(--admin-bg-primary)] text-[#EE6D3C] px-3 py-1 rounded-full border border-[#EE6D3C]/20">9 Tables</span>
+                                <span class="text-xs font-bold bg-[var(--admin-bg-primary)] text-[#EE6D3C] px-3 py-1 rounded-full border border-[#EE6D3C]/20"
+                                    x-text="availableTablesCount() + ' Free'"></span>
+                                <span class="text-xs font-bold bg-red-50 text-red-500 px-3 py-1 rounded-full border border-red-200"
+                                    x-text="reservedTablesCount() + ' Reserved'"></span>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3 mb-8 text-xs font-semibold">
+                                <span class="inline-flex items-center gap-2 text-[var(--admin-text-secondary)]">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                    Free
+                                </span>
+                                <span class="inline-flex items-center gap-2 text-[var(--admin-text-secondary)]">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+                                    Reserved
+                                </span>
+                                <span class="inline-flex items-center gap-2 text-[var(--admin-text-secondary)]">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-[#EE6D3C]"></span>
+                                    Selected
+                                </span>
+                            </div>
+                            <div class="mb-6 rounded-2xl border border-dashed border-[var(--admin-border)] bg-[var(--admin-card-bg)] px-4 py-3 text-sm text-[var(--admin-text-secondary)]"
+                                :class="shouldUseSlotAvailability() ? 'border-emerald-200 bg-emerald-50/40 text-emerald-700' : ''">
+                                <span x-show="!shouldUseSlotAvailability()">
+                                    Colors are shown immediately. Pick date and time to check the exact reservation slot for each table.
+                                </span>
+                                <span x-show="shouldUseSlotAvailability()">
+                                    Live availability for <span class="font-bold" x-text="selectedDate"></span> at <span class="font-bold" x-text="formatTime(selectedTime)"></span>.
+                                </span>
                             </div>
                             <div class="grid grid-cols-3 gap-y-12 gap-x-6 place-items-center">
                                 @for ($i = 1; $i <= 9; $i++)
@@ -122,38 +180,88 @@
                                         $isLarge = in_array($i, [1, 5, 9]);
                                         $capacity = $isLarge ? 4 : 2;
                                     @endphp
-                                    <div @click="selectedTable = '{{ $i }}'"
+                                    <button type="button"
+                                         @click="selectTable({{ $i }})"
                                          title="Table {{ $i }} ({{ $capacity }} seats)"
-                                         class="cursor-pointer group relative rounded-xl shadow-sm flex items-center justify-center transition-all duration-300"
+                                         class="group relative rounded-xl shadow-sm flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-300"
                                          style="width: {{ $isLarge ? '72px' : '64px' }}; height: {{ $isLarge ? '72px' : '64px' }};"
                                          :class="selectedTable == '{{ $i }}'
-                                             ? 'bg-[#EE6D3C] scale-110 shadow-lg z-10'
-                                             : 'bg-white hover:scale-105 hover:shadow-md hover:bg-orange-50'">
+                                             ? 'bg-[#EE6D3C] border border-orange-500 scale-110 shadow-lg z-10'
+                                             : (tableStatus({{ $i }}) === 'reserved'
+                                                ? 'bg-red-100 border border-red-300 shadow-sm cursor-not-allowed'
+                                                : (tableStatus({{ $i }}) === 'available'
+                                                    ? 'bg-emerald-100 border border-emerald-300 shadow-sm hover:scale-105 hover:shadow-md hover:bg-emerald-200'
+                                                    : 'bg-white border border-transparent hover:scale-105 hover:shadow-md hover:bg-orange-50'))">
                                         
                                         {{-- Chairs visual decoration --}}
                                         <div class="absolute -top-3 left-1/4 w-1/2 h-2 rounded-t-full transition-colors"
-                                             :class="selectedTable == '{{ $i }}' ? 'bg-orange-300' : 'bg-[var(--admin-border)] group-hover:bg-orange-200'"></div>
+                                             :class="selectedTable == '{{ $i }}'
+                                                ? 'bg-orange-300'
+                                                : (tableStatus({{ $i }}) === 'reserved'
+                                                    ? 'bg-red-300'
+                                                    : (tableStatus({{ $i }}) === 'available'
+                                                        ? 'bg-emerald-300'
+                                                        : 'bg-[var(--admin-border)] group-hover:bg-orange-200'))"></div>
                                         <div class="absolute -bottom-3 left-1/4 w-1/2 h-2 rounded-b-full transition-colors"
-                                             :class="selectedTable == '{{ $i }}' ? 'bg-orange-300' : 'bg-[var(--admin-border)] group-hover:bg-orange-200'"></div>
+                                             :class="selectedTable == '{{ $i }}'
+                                                ? 'bg-orange-300'
+                                                : (tableStatus({{ $i }}) === 'reserved'
+                                                    ? 'bg-red-300'
+                                                    : (tableStatus({{ $i }}) === 'available'
+                                                        ? 'bg-emerald-300'
+                                                        : 'bg-[var(--admin-border)] group-hover:bg-orange-200'))"></div>
                                         
                                         @if($isLarge)
                                             <div class="absolute -left-3 top-1/4 w-2 h-1/2 rounded-l-full transition-colors"
-                                                 :class="selectedTable == '{{ $i }}' ? 'bg-orange-300' : 'bg-[var(--admin-border)] group-hover:bg-orange-200'"></div>
+                                                 :class="selectedTable == '{{ $i }}'
+                                                    ? 'bg-orange-300'
+                                                    : (tableStatus({{ $i }}) === 'reserved'
+                                                        ? 'bg-red-300'
+                                                        : (tableStatus({{ $i }}) === 'available'
+                                                            ? 'bg-emerald-300'
+                                                            : 'bg-[var(--admin-border)] group-hover:bg-orange-200'))"></div>
                                             <div class="absolute -right-3 top-1/4 w-2 h-1/2 rounded-r-full transition-colors"
-                                                 :class="selectedTable == '{{ $i }}' ? 'bg-orange-300' : 'bg-[var(--admin-border)] group-hover:bg-orange-200'"></div>
+                                                 :class="selectedTable == '{{ $i }}'
+                                                    ? 'bg-orange-300'
+                                                    : (tableStatus({{ $i }}) === 'reserved'
+                                                        ? 'bg-red-300'
+                                                        : (tableStatus({{ $i }}) === 'available'
+                                                            ? 'bg-emerald-300'
+                                                            : 'bg-[var(--admin-border)] group-hover:bg-orange-200'))"></div>
                                         @endif
 
-                                        <div class="flex flex-col items-center">
+                                        <div class="flex flex-col items-center leading-tight">
                                             <span class="font-bold text-xl transition-colors"
-                                                  :class="selectedTable == '{{ $i }}' ? 'text-white' : 'text-[var(--admin-text-primary)]'">
+                                                  :class="selectedTable == '{{ $i }}'
+                                                    ? 'text-white'
+                                                    : (tableStatus({{ $i }}) === 'reserved'
+                                                        ? 'text-red-700'
+                                                        : (tableStatus({{ $i }}) === 'available'
+                                                            ? 'text-emerald-700'
+                                                            : 'text-[var(--admin-text-primary)]'))">
                                                 {{ $i }}
                                             </span>
                                             <span class="text-[8px] font-bold uppercase tracking-tighter transition-colors"
-                                                  :class="selectedTable == '{{ $i }}' ? 'text-orange-200' : 'text-[var(--admin-text-secondary)] group-hover:text-orange-300'">
+                                                  :class="selectedTable == '{{ $i }}'
+                                                    ? 'text-orange-200'
+                                                    : (tableStatus({{ $i }}) === 'reserved'
+                                                        ? 'text-red-500'
+                                                        : (tableStatus({{ $i }}) === 'available'
+                                                            ? 'text-emerald-500'
+                                                            : 'text-[var(--admin-text-secondary)] group-hover:text-orange-300'))">
                                                 {{ $capacity }} Seats
                                             </span>
+                                            <span class="mt-1 rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.18em] transition-colors"
+                                                  :class="selectedTable == '{{ $i }}'
+                                                    ? 'bg-orange-400/30 text-orange-50'
+                                                    : (tableStatus({{ $i }}) === 'reserved'
+                                                        ? 'bg-red-200 text-red-700'
+                                                        : (tableStatus({{ $i }}) === 'available'
+                                                            ? 'bg-emerald-200 text-emerald-700'
+                                                            : 'bg-slate-100 text-[var(--admin-text-secondary)]'))"
+                                                  x-text="tableStatusLabel({{ $i }})"></span>
                                         </div>
-                                    </div>
+                                    </button>
                                 @endfor
                             </div>
                         </div>
@@ -179,3 +287,90 @@
         </main>
     </div>
 </div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('reservationForm', (config) => ({
+            ...config,
+            initialize() {
+                this.selectedDate = this.selectedDate || '';
+                this.selectedTime = this.normalizeTime(this.selectedTime);
+                this.selectedTable = this.selectedTable ? String(this.selectedTable) : '';
+                this.guestCount = this.guestCount || '1';
+                this.slotAvailabilityActive = Boolean(this.slotAvailabilityActive);
+            },
+            shouldUseSlotAvailability() {
+                return Boolean(this.slotAvailabilityActive && this.selectedDate && this.selectedTime);
+            },
+            activateSlotAvailability() {
+                this.slotAvailabilityActive = Boolean(this.selectedDate && this.selectedTime);
+            },
+            normalizeTime(value) {
+                return String(value || '').slice(0, 5);
+            },
+            formatTime(value) {
+                const normalized = this.normalizeTime(value);
+
+                if (!normalized) {
+                    return '--:--';
+                }
+
+                const [hours, minutes] = normalized.split(':');
+
+                return `${hours}:${minutes}`;
+            },
+            tableReservation(tableId) {
+                return this.reservations.find((reservation) => (
+                    Number(reservation.table_id) === Number(tableId)
+                    && (!this.shouldUseSlotAvailability() || reservation.date === this.selectedDate)
+                    && (!this.shouldUseSlotAvailability() || this.normalizeTime(reservation.time) === this.normalizeTime(this.selectedTime))
+                    && Number(reservation.id) !== Number(this.currentReservationId)
+                )) || null;
+            },
+            tableStatus(tableId) {
+                return this.tableReservation(tableId) ? 'reserved' : 'available';
+            },
+            tableStatusLabel(tableId) {
+                const status = this.tableStatus(tableId);
+
+                if (status === 'reserved') {
+                    return 'Reserved';
+                }
+
+                if (status === 'available') {
+                    return 'Free';
+                }
+
+                return 'Free';
+            },
+            availableTablesCount() {
+                return Array.from({ length: 9 }, (_, index) => index + 1)
+                    .filter((tableId) => this.tableStatus(tableId) === 'available')
+                    .length;
+            },
+            reservedTablesCount() {
+                return Array.from({ length: 9 }, (_, index) => index + 1)
+                    .filter((tableId) => this.tableStatus(tableId) === 'reserved')
+                    .length;
+            },
+            selectTable(tableId) {
+                if (!this.selectedDate || !this.selectedTime) {
+                    return;
+                }
+
+                this.activateSlotAvailability();
+
+                if (this.tableStatus(tableId) === 'reserved') {
+                    return;
+                }
+
+                this.selectedTable = String(tableId);
+            },
+            syncSelectedTable() {
+                if (this.shouldUseSlotAvailability() && this.selectedTable && this.tableStatus(this.selectedTable) === 'reserved') {
+                    this.selectedTable = '';
+                }
+            },
+        }));
+    });
+</script>

@@ -22,7 +22,7 @@
                     <h2 class="text-2xl font-bold text-[var(--admin-text-primary)]">
                         {{ isset($category) ? 'Edit Category' : 'Create New Category' }}
                     </h2>
-                    <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">
+                    <span class="text-xs font-bold bg-[var(--admin-bg-primary)] text-[var(--admin-accent)] px-3 py-1 rounded-full border border-[var(--admin-accent)]/20">
                         {{ isset($category) ? 'Editing' : 'New' }}
                     </span>
                 </div>

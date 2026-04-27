@@ -13,40 +13,38 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function pageReport()
+    public function pageReport(Request $request)
     {
-        $products     = Product::with('category')->get();
-        $categories   = Category::withCount('products')->get();
-        $orders       = Order::with('items.product')->orderBy('created_at', 'desc')->get();
-        $orderItems   = OrderItem::with('product')->get();
-        $reservations = Reservation::orderBy('created_at', 'desc')->get();
+        $filter = $this->resolveReportFilter($request);
+        $activeTab = $request->query('tab', 'reservations');
 
-        // Pre-calculate sales stats here (avoids Collection method errors in blade)
+        $productsQuery = Product::with('category');
+        $categoriesQuery = Category::withCount('products');
+        $ordersQuery = Order::with('items.product')->orderBy('created_at', 'desc');
+        $orderItemsQuery = OrderItem::with('product');
+        $reservationsQuery = Reservation::orderBy('created_at', 'desc');
+
+        $this->applyCreatedAtFilter($productsQuery, 'created_at', $filter);
+        $this->applyCreatedAtFilter($categoriesQuery, 'created_at', $filter);
+        $this->applyCreatedAtFilter($ordersQuery, 'created_at', $filter);
+        $this->applyCreatedAtFilter($orderItemsQuery, 'created_at', $filter);
+        $this->applyDateColumnFilter($reservationsQuery, 'date', $filter);
+
+        $products     = $productsQuery->get();
+        $categories   = $categoriesQuery->get();
+        $orders       = $ordersQuery->get();
+        $orderItems   = $orderItemsQuery->get();
+        $reservations = $reservationsQuery->get();
+
         $completedOrders = $orders->where('status', 'completed');
-
-        $dailySalesTotal = $completedOrders
-            ->filter(fn($o) => Carbon::parse($o->created_at)->isToday())
-            ->sum('total_amount');
-
-        $monthlySalesTotal = $completedOrders
-            ->filter(fn($o) => Carbon::parse($o->created_at)->month === now()->month
-                            && Carbon::parse($o->created_at)->year  === now()->year)
-            ->sum('total_amount');
-
         $grandTotal = $completedOrders->sum('total_amount');
+        $dailySalesTotal = $grandTotal;
+        $monthlySalesTotal = $grandTotal;
+        $todayTotal = $grandTotal;
+        $todayCount = $completedOrders->count();
+        $monthlyCount = $completedOrders->count();
+        $averageSale = (float) $completedOrders->avg('total_amount');
 
-        $todayOrders = $completedOrders
-            ->filter(fn($o) => Carbon::parse($o->created_at)->isToday());
-
-        $todayTotal = $todayOrders->sum('total_amount');
-        $todayCount = $todayOrders->count();
-
-        $monthlyCount = $completedOrders
-            ->filter(fn($o) => Carbon::parse($o->created_at)->month === now()->month
-                            && Carbon::parse($o->created_at)->year  === now()->year)
-            ->count();
-
-        // Group sales by date for the Sales tab
         $salesByDate = $completedOrders
             ->groupBy(fn($o) => Carbon::parse($o->created_at)->format('Y-m-d'))
             ->sortKeysDesc();
@@ -64,7 +62,10 @@ class ReportController extends Controller
             'todayTotal',
             'todayCount',
             'monthlyCount',
+            'averageSale',
             'salesByDate',
+            'filter',
+            'activeTab',
         ));
     }
 
@@ -72,6 +73,7 @@ class ReportController extends Controller
     public function exportExcel(Request $request)
     {
         $type = $request->get('type', 'all');
+        $filter = $this->resolveReportFilter($request);
 
         $rows    = [];
         $headers = [];
@@ -79,14 +81,18 @@ class ReportController extends Controller
         switch ($type) {
             case 'reservations':
                 $headers = ['ID', 'Full Name', 'Phone', 'Date', 'Time', 'Table'];
-                foreach (Reservation::orderBy('created_at', 'desc')->get() as $r) {
+                $query = Reservation::orderBy('created_at', 'desc');
+                $this->applyDateColumnFilter($query, 'date', $filter);
+                foreach ($query->get() as $r) {
                     $rows[] = [$r->id, $r->full_name, $r->phone_number, $r->date, $r->time, $r->table_id];
                 }
                 break;
 
             case 'orders':
                 $headers = ['ID', 'Items', 'Status', 'Total Amount', 'Date'];
-                foreach (Order::with('items.product')->orderBy('created_at', 'desc')->get() as $o) {
+                $query = Order::with('items.product')->orderBy('created_at', 'desc');
+                $this->applyCreatedAtFilter($query, 'created_at', $filter);
+                foreach ($query->get() as $o) {
                     $itemsList = $o->items->map(fn($i) => ($i->name ?? $i->product?->name ?? 'Unknown') . ' x' . $i->quantity)->join(', ');
                     $rows[] = [$o->id, $itemsList ?: '—', $o->status, $o->total_amount, $o->created_at->format('d M Y h:i A')];
                 }
@@ -94,21 +100,27 @@ class ReportController extends Controller
 
             case 'products':
                 $headers = ['ID', 'Name', 'Category', 'Price', 'Cost', 'Qty'];
-                foreach (Product::with('category')->get() as $p) {
+                $query = Product::with('category');
+                $this->applyCreatedAtFilter($query, 'created_at', $filter);
+                foreach ($query->get() as $p) {
                     $rows[] = [$p->id, $p->name, $p->category?->name ?? 'N/A', $p->price, $p->cost ?? 0, $p->qty ?? 'N/A'];
                 }
                 break;
 
             case 'categories':
                 $headers = ['ID', 'Name', 'Code', 'Total Products', 'Created At'];
-                foreach (Category::withCount('products')->get() as $c) {
+                $query = Category::withCount('products');
+                $this->applyCreatedAtFilter($query, 'created_at', $filter);
+                foreach ($query->get() as $c) {
                     $rows[] = [$c->id, $c->name, $c->code ?? '—', $c->products_count, $c->created_at->format('d M Y')];
                 }
                 break;
 
             case 'sales':
                 $headers = ['Date', 'Order ID', 'Items', 'Time', 'Amount'];
-                $completed = Order::with('items.product')->where('status', 'completed')->orderBy('created_at', 'desc')->get();
+                $query = Order::with('items.product')->where('status', 'completed')->orderBy('created_at', 'desc');
+                $this->applyCreatedAtFilter($query, 'created_at', $filter);
+                $completed = $query->get();
                 foreach ($completed as $o) {
                     $itemsList = $o->items->map(fn($i) => ($i->name ?? $i->product?->name ?? 'Unknown') . ' x' . $i->quantity)->join(', ');
                     $rows[] = [
@@ -124,17 +136,25 @@ class ReportController extends Controller
 
             default:
                 $headers = ['Section', 'ID', 'Col1', 'Col2', 'Col3', 'Col4'];
-                foreach (Reservation::all() as $r) {
+                $reservationsQuery = Reservation::query();
+                $this->applyDateColumnFilter($reservationsQuery, 'date', $filter);
+                foreach ($reservationsQuery->get() as $r) {
                     $rows[] = ['Reservation', $r->id, $r->full_name, $r->phone_number, $r->date . ' ' . $r->time, 'Table ' . $r->table_id];
                 }
-                foreach (Order::with('items.product')->get() as $o) {
+                $ordersQuery = Order::with('items.product');
+                $this->applyCreatedAtFilter($ordersQuery, 'created_at', $filter);
+                foreach ($ordersQuery->get() as $o) {
                     $itemsList = $o->items->map(fn($i) => ($i->name ?? $i->product?->name ?? 'Unknown') . ' x' . $i->quantity)->join(', ');
                     $rows[] = ['Order', $o->id, $itemsList ?: '—', $o->status, '$' . number_format($o->total_amount, 2), $o->created_at->format('d M Y')];
                 }
-                foreach (Product::with('category')->get() as $p) {
+                $productsQuery = Product::with('category');
+                $this->applyCreatedAtFilter($productsQuery, 'created_at', $filter);
+                foreach ($productsQuery->get() as $p) {
                     $rows[] = ['Product', $p->id, $p->name, $p->category?->name ?? 'N/A', '$' . number_format($p->price, 2), $p->qty ?? 'N/A'];
                 }
-                foreach (Category::withCount('products')->get() as $c) {
+                $categoriesQuery = Category::withCount('products');
+                $this->applyCreatedAtFilter($categoriesQuery, 'created_at', $filter);
+                foreach ($categoriesQuery->get() as $c) {
                     $rows[] = ['Category', $c->id, $c->name, $c->products_count . ' items', $c->created_at->format('d M Y'), ''];
                 }
                 break;
@@ -161,17 +181,28 @@ class ReportController extends Controller
     public function exportPdf(Request $request)
     {
         $type = $request->get('type', 'all');
+        $filter = $this->resolveReportFilter($request);
+
+        $reservationsQuery = Reservation::orderBy('created_at', 'desc');
+        $ordersQuery = Order::with('items.product')->orderBy('created_at', 'desc');
+        $productsQuery = Product::with('category');
+        $categoriesQuery = Category::withCount('products');
+
+        $this->applyDateColumnFilter($reservationsQuery, 'date', $filter);
+        $this->applyCreatedAtFilter($ordersQuery, 'created_at', $filter);
+        $this->applyCreatedAtFilter($productsQuery, 'created_at', $filter);
+        $this->applyCreatedAtFilter($categoriesQuery, 'created_at', $filter);
 
         $data = [
             'type'         => $type,
             'generatedAt'  => now()->format('d M Y, h:i A'),
-            'reservations' => in_array($type, ['all', 'reservations']) ? Reservation::orderBy('created_at', 'desc')->get() : collect(),
-            'orders'       => in_array($type, ['all', 'orders'])       ? Order::orderBy('created_at', 'desc')->get()       : collect(),
-            'products'     => in_array($type, ['all', 'products'])     ? Product::with('category')->get()                  : collect(),
-            'categories'   => in_array($type, ['all', 'categories'])   ? Category::withCount('products')->get()            : collect(),
+            'reservations' => in_array($type, ['all', 'reservations']) ? $reservationsQuery->get() : collect(),
+            'orders'       => in_array($type, ['all', 'orders'])       ? $ordersQuery->get()       : collect(),
+            'products'     => in_array($type, ['all', 'products'])     ? $productsQuery->get()     : collect(),
+            'categories'   => in_array($type, ['all', 'categories'])   ? $categoriesQuery->get()   : collect(),
         ];
 
-        $html = view('components.report_pdf', $data)->render();
+        $html = view('Admin.Reports.report_pdf', $data)->render();
 
         $filename = 'fastbite-report-' . $type . '-' . now()->format('Ymd-His') . '.html';
 
@@ -179,5 +210,72 @@ class ReportController extends Controller
             'Content-Type'        => 'text/html',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    protected function resolveReportFilter(Request $request): array
+    {
+        $mode = $request->query('report_mode', 'day');
+        $mode = in_array($mode, ['day', 'month'], true) ? $mode : 'day';
+
+        if ($mode === 'month') {
+            $monthInput = $request->query('report_month', now()->format('Y-m'));
+
+            try {
+                $month = Carbon::createFromFormat('Y-m', $monthInput)->startOfMonth();
+            } catch (\Throwable $e) {
+                $month = now()->startOfMonth();
+                $monthInput = $month->format('Y-m');
+            }
+
+            return [
+                'mode' => 'month',
+                'report_date' => $month->toDateString(),
+                'report_month' => $monthInput,
+                'start' => $month->copy()->startOfMonth(),
+                'end' => $month->copy()->endOfMonth(),
+                'heading' => 'Monthly Report',
+                'label' => $month->format('F Y'),
+                'description' => 'Showing all records for ' . $month->format('F Y') . '.',
+            ];
+        }
+
+        $dateInput = $request->query('report_date', now()->toDateString());
+
+        try {
+            $date = Carbon::parse($dateInput)->startOfDay();
+        } catch (\Throwable $e) {
+            $date = now()->startOfDay();
+            $dateInput = $date->toDateString();
+        }
+
+        return [
+            'mode' => 'day',
+            'report_date' => $dateInput,
+            'report_month' => $date->format('Y-m'),
+            'start' => $date->copy()->startOfDay(),
+            'end' => $date->copy()->endOfDay(),
+            'heading' => 'Daily Report',
+            'label' => $date->format('d F Y'),
+            'description' => 'Showing all records for ' . $date->format('d F Y') . '.',
+        ];
+    }
+
+    protected function applyCreatedAtFilter($query, string $column, array $filter): void
+    {
+        $query->whereBetween($column, [$filter['start'], $filter['end']]);
+    }
+
+    protected function applyDateColumnFilter($query, string $column, array $filter): void
+    {
+        if ($filter['mode'] === 'month') {
+            $query->whereBetween($column, [
+                $filter['start']->toDateString(),
+                $filter['end']->toDateString(),
+            ]);
+
+            return;
+        }
+
+        $query->whereDate($column, $filter['start']->toDateString());
     }
 }

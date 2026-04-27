@@ -1,7 +1,10 @@
 {{-- resources/views/Admin/Menus/partials/menu-board.blade.php --}}
 
 <div class="bg-[var(--admin-card-bg)] rounded-lg shadow-sm border border-[var(--admin-border)] p-6 md:p-8 mt-3 md:mt-0 mb-6">
-    <h2 class="text-2xl md:text-3xl text-[var(--admin-text-primary)] font-bold mb-6">Menu</h2>
+    <h2 class="text-2xl md:text-3xl text-[var(--admin-text-primary)] font-bold mb-6">
+        Menu
+        <span class="text-xs font-bold bg-[var(--admin-bg-primary)] text-[var(--admin-accent)] px-3 py-1 rounded-full border border-[var(--admin-accent)]/20">Menus</span>
+    </h2>
 
     {{-- Category tabs --}}
     <div class="flex overflow-x-auto gap-3 pb-4 mb-8 no-scrollbar">

@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
 use App\Models\Reservation;
+use App\Services\ResourceDeletionRequestService;
 
 class MenuController extends Controller
 {
@@ -235,26 +236,23 @@ class MenuController extends Controller
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
 
-            $itemLines = $order->items->map(fn($i) => "• {$i->name} x{$i->quantity}")->toArray();
-            $total     = $order->total_amount;
-            $status    = $order->status;
+            $result = app(ResourceDeletionRequestService::class)->submit([
+                'requester_id' => $user->id,
+                'resource_type' => 'order',
+                'resource_id' => $order->id,
+                'resource_name' => 'Order #' . $order->id,
+                'payload' => ['context' => $order->table_number ? 'Table ' . $order->table_number : 'Order record'],
+                'reason' => null,
+            ]);
 
-            $order->items()->delete();
-            $order->delete();
+            if (!$result['created']) {
+                return response()->json(['error' => 'A pending deletion request already exists for this order.'], 422);
+            }
 
-            $this->sendTelegram(implode("\n", [
-                "🗑 *Order Deleted — FastBite*",
-                "━━━━━━━━━━━━━━━━━━━━",
-                "*Order ID:* #" . $id,
-                "*Was Status:* " . ucfirst($status),
-                "*Items:*",
-                implode("\n", $itemLines ?: ["• (no items)"]),
-                "━━━━━━━━━━━━━━━━━━━━",
-                "*Total was: \$" . number_format($total, 2) . "*",
-                "_Deleted by User._",
-            ]));
-
-            return response()->json(['message' => 'Order deleted']);
+            return response()->json([
+                'message' => 'Order deletion request submitted for admin approval.',
+                'request_submitted' => true,
+            ]);
 
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);

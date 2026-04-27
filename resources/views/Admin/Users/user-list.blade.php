@@ -22,7 +22,7 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div class="flex items-center gap-3">
                         <h2 class="text-2xl font-bold text-[var(--admin-text-primary)]">User Management</h2>
-                        <span class="text-xs font-bold bg-[#FFE4DB] text-[#EE6D3C] px-3 py-1 rounded-full">
+                        <span class="text-xs font-bold bg-[var(--admin-bg-primary)] text-[var(--admin-accent)] px-3 py-1 rounded-full border border-[var(--admin-accent)]/20">
                             {{ $users->total() }} users
                         </span>
                     </div>

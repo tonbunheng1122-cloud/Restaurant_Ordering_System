@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Product;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
+use App\Services\ResourceDeletionRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -95,19 +96,24 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('category')->findOrFail($id);
 
-        if ($product->images && is_array($product->images)) {
-            foreach ($product->images as $img) {
-                if (Storage::disk('public')->exists($img)) {
-                    Storage::disk('public')->delete($img);
-                }
-            }
+        $result = app(ResourceDeletionRequestService::class)->submit([
+            'requester_id' => auth()->id(),
+            'resource_type' => 'product',
+            'resource_id' => $product->id,
+            'resource_name' => $product->name,
+            'payload' => ['context' => $product->category?->name ?: 'Product record'],
+            'reason' => null,
+        ]);
+
+        if (!$result['created']) {
+            return redirect()->route('allproduct.index')
+                ->withErrors(['error' => 'A pending deletion request already exists for this product.']);
         }
-        $product->delete();
 
         return redirect()->route('allproduct.index')
-            ->with('success', 'Product and Images Deleted Successfully!');
+            ->with('success', 'Product deletion request submitted for admin approval.');
     }
 
     public function show($id)

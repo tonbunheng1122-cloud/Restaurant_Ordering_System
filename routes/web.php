@@ -111,6 +111,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/deletion-requests/{id}/approve',        [SettingController::class, 'approveDeletion']) ->name('deletion-requests.approve');
     Route::post('/deletion-requests/{id}/deny',           [SettingController::class, 'denyDeletion'])    ->name('deletion-requests.deny');
     Route::delete('/deletion-requests/delete-all-approved', [SettingController::class, 'deleteAllApproved'])->name('deletion-requests.delete-all-approved');
+    Route::post('/resource-deletion-requests/{id}/approve', [SettingController::class, 'approveResourceDeletion'])->name('resource-deletion-requests.approve');
+    Route::post('/resource-deletion-requests/{id}/deny', [SettingController::class, 'denyResourceDeletion'])->name('resource-deletion-requests.deny');
+    Route::delete('/resource-deletion-requests/delete-all-approved', [SettingController::class, 'deleteAllApprovedResourceRequests'])->name('resource-deletion-requests.delete-all-approved');
 
     // Profile
     Route::post('/settings/profile/info',     [ProfileController::class, 'updateInfo'])    ->name('profile.updateInfo');

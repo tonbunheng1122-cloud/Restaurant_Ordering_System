@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Categories;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Services\ResourceDeletionRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -82,13 +83,21 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
 
-        if ($category->image && Storage::disk('public')->exists($category->image)) {
-            Storage::disk('public')->delete($category->image);
+        $result = app(ResourceDeletionRequestService::class)->submit([
+            'requester_id' => auth()->id(),
+            'resource_type' => 'category',
+            'resource_id' => $category->id,
+            'resource_name' => $category->name,
+            'payload' => ['context' => 'Category record'],
+            'reason' => null,
+        ]);
+
+        if (!$result['created']) {
+            return redirect()->route('allcategory.index')
+                ->withErrors(['error' => 'A pending deletion request already exists for this category.']);
         }
 
-        $category->delete();
-
         return redirect()->route('allcategory.index')
-            ->with('success', 'Category and Image Deleted Successfully!');
+            ->with('success', 'Category deletion request submitted for admin approval.');
     }
 }

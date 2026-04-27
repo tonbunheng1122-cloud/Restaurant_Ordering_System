@@ -6,6 +6,20 @@ body { font-family: 'Inter', sans-serif; }
 .custom-scrollbar::-webkit-scrollbar { width: 5px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #EE6D3C; border-radius: 10px; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+[x-cloak] { display: none !important; }
+
+.report-picker-input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+}
+
+.report-picker-input::-webkit-calendar-picker-indicator,
+.report-picker-input::-webkit-inner-spin-button,
+.report-picker-input::-webkit-clear-button {
+    opacity: 0;
+    display: none;
+}
 
 #toast {
     position: fixed;
@@ -113,7 +127,8 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
 @endphp
 
 <div class="bg-[var(--admin-bg-primary)] min-h-screen text-[var(--admin-text-primary)]" x-data="{
-    activeTab: 'reservations',
+    activeTab: '{{ $activeTab }}',
+    reportMode: '{{ $filter['mode'] }}',
 
     /* ── Data ── */
     reservations: {{ Js::from($reservationsJson) }},
@@ -221,7 +236,19 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
         if (this.exportFormat === 'print') {
             this.$nextTick(() => window.print());
         } else {
-            window.location.href = '/reports/export/' + this.exportFormat + '?type=' + this.activeTab;
+            const params = new URLSearchParams({
+                type: this.activeTab,
+                tab: this.activeTab,
+                report_mode: this.reportMode,
+            });
+
+            if (this.reportMode === 'day') {
+                params.set('report_date', '{{ $filter['report_date'] }}');
+            } else {
+                params.set('report_month', '{{ $filter['report_month'] }}');
+            }
+
+            window.location.href = '{{ url('/reports/export') }}/' + this.exportFormat + '?' + params.toString();
         }
         this.showToast(this.exportLabel);
     },
@@ -249,13 +276,11 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
 
     <div class="flex flex-col md:flex-row md:h-screen md:p-4 md:gap-6 md:overflow-hidden relative">
 
-        <!-- Sidebar -->
         @include('components.asidebar')
 
         <main class="flex-1 overflow-y-auto px-3 pb-4 md:px-0 md:pr-2 custom-scrollbar">
             <div class="bg-[var(--admin-card-bg)] rounded-lg shadow-md border border-[var(--admin-border)] p-6 md:p-8 mt-3 md:mt-0 mb-8">
 
-                <!-- HEADER -->
                 <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
                     <div>
                         <div class="flex items-center gap-3 mb-1">
@@ -271,7 +296,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         <p class="text-sm text-[var(--admin-text-secondary)] ml-12">View and export your restaurant data</p>
                     </div>
 
-                    <!-- Export buttons -->
                     <div class="flex items-center gap-2 flex-wrap no-print">
                         <button @click="openExport('excel')"
                             class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-150">
@@ -297,7 +321,71 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     </div>
                 </div>
 
-                <!-- STATS ROW -->
+                <div class="mb-8 flex flex-col xl:flex-row xl:items-center justify-between rounded-[2.5rem] border border-orange-200 bg-[#FFF9F4] px-8 py-7 shadow-[0_8px_30px_rgba(238,109,60,0.04)]">
+                    
+                    <div>
+                        <p class="mb-1 text-[11px] font-black uppercase tracking-[0.2em] text-[#DE7351]">Report Period</p>
+                        <h3 class="text-3xl font-black text-[#1C2434] leading-tight">{{ $filter['label'] ?? '24 April 2026' }}</h3>
+                        <p class="mt-1 text-sm font-medium text-[#64748B]">{{ $filter['description'] ?? 'Showing all records for 24 April 2026.' }}</p>
+                    </div>
+
+                    <form method="GET" action="{{ route('report.index') }}" class="mt-8 xl:mt-0 flex flex-wrap items-end gap-3">
+                        <input type="hidden" name="tab" :value="activeTab">
+                        <input type="hidden" name="report_mode" :value="reportMode">
+
+                        <div class="flex items-center gap-4 mr-2">
+                            <span class="text-[10px] font-black uppercase tracking-[0.15em] text-[#64748B]">Date Mode</span>
+                            <div class="flex rounded-[1.25rem] border border-orange-200 bg-white p-1">
+                                <button type="button" @click="reportMode = 'day'"
+                                    :class="reportMode === 'day' ? 'bg-[#DE7351] text-white shadow-sm' : 'text-slate-500 hover:text-[#DE7351]'"
+                                    class="rounded-xl px-6 py-2.5 text-sm font-bold transition-all">
+                                    Day
+                                </button>
+                                <button type="button" @click="reportMode = 'month'"
+                                    :class="reportMode === 'month' ? 'bg-[#DE7351] text-white shadow-sm' : 'text-slate-500 hover:text-[#DE7351]'"
+                                    class="rounded-xl px-6 py-2.5 text-sm font-bold transition-all">
+                                    Month
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="relative flex flex-col items-center ml-1" x-show="reportMode === 'day'" x-cloak>
+                            <label class="absolute -top-6 left-1 text-[10px] font-black uppercase tracking-[0.15em] text-[#64748B]">Pick Day</label>
+                            <div class="relative flex h-[52px] w-[88px] items-center justify-center rounded-[1.25rem] border border-orange-200 bg-white">
+                                <input x-ref="dayPicker" type="date" name="report_date" value="{{ $filter['report_date'] ?? '' }}" class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0">
+                                <button type="button" class="flex h-10 w-[70px] items-center justify-center rounded-[0.85rem] bg-[#DE7351] text-white shadow-sm pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="relative flex flex-col items-center ml-1" x-show="reportMode === 'month'" x-cloak>
+                            <label class="absolute -top-6 left-1 text-[10px] font-black uppercase tracking-[0.15em] text-[#64748B]">Pick Month</label>
+                            <div class="relative flex h-[52px] w-[88px] items-center justify-center rounded-[1.25rem] border border-orange-200 bg-white">
+                                <input x-ref="monthPicker" type="month" name="report_month" value="{{ $filter['report_month'] ?? '' }}" class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0">
+                                <button type="button" class="flex h-10 w-[70px] items-center justify-center rounded-[0.85rem] bg-[#DE7351] text-white shadow-sm pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="flex h-[52px] items-center justify-center gap-2 rounded-[1.25rem] bg-[#DE7351] px-6 text-sm font-bold text-white transition hover:bg-[#c96645] shadow-sm ml-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Submit Filter
+                        </button>
+
+                        <a href="{{ route('report.index') }}" class="flex h-[52px] items-center justify-center rounded-[1.25rem] border border-gray-200 bg-white px-6 text-sm font-bold text-[#475569] transition hover:bg-gray-50 hover:text-gray-900 shadow-sm ml-1">
+                            Reset
+                        </a>
+                    </form>
+                </div>
+
                 <div class="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-8">
                     <div class="bg-orange-50 dark:bg-orange-500/10 rounded-2xl p-4 border border-orange-200 dark:border-orange-500/20 shadow-sm transition-all hover:shadow-md">
                         <p class="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-wide mb-1">Reservations</p>
@@ -329,7 +417,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     </div>
                 </div>
 
-                <!-- TABS -->
                 <div class="flex gap-1 bg-[var(--admin-bg-primary)] border border-[var(--admin-border)] rounded-xl p-1 mb-6 no-print overflow-x-auto no-scrollbar">
                     @foreach(['reservations','orders','products','categories','sales'] as $tab)
                         <button @click="activeTab = '{{ $tab }}'"
@@ -345,7 +432,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     @endforeach
                 </div>
 
-                <!-- RESERVATIONS -->
                 <div x-show="activeTab === 'reservations'" x-transition>
                     <div class="flex flex-wrap gap-3 mb-4">
                         <div class="relative w-full md:w-72">
@@ -388,7 +474,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                             </tbody>
                         </table>
                     </div>
-                    <!-- Reservations Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredReservations.length
@@ -408,7 +493,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     </div>
                 </div>
 
-                <!-- ORDERS -->
                 <div x-show="activeTab === 'orders'" x-transition>
                     <div class="flex flex-wrap gap-3 mb-4">
                         <div class="relative w-full md:w-72">
@@ -476,7 +560,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                             </tbody>
                         </table>
                     </div>
-                    <!-- Orders Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredOrders.length
@@ -496,7 +579,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     </div>
                 </div>
 
-                <!-- PRODUCTS -->
                 <div x-show="activeTab === 'products'" x-transition>
                     <div class="flex flex-wrap gap-3 mb-4">
                         <div class="relative w-full md:w-72">
@@ -551,7 +633,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                             </tbody>
                         </table>
                     </div>
-                    <!-- Products Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredProducts.length
@@ -571,7 +652,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     </div>
                 </div>
 
-                <!-- CATEGORIES -->
                 <div x-show="activeTab === 'categories'" x-transition>
                     <div class="flex flex-wrap gap-3 mb-4">
                         <div class="relative w-full md:w-72">
@@ -609,7 +689,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                             </tbody>
                         </table>
                     </div>
-                    <!-- Categories Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredCategories.length
@@ -629,10 +708,8 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     </div>
                 </div>
 
-                <!-- SALES -->
                 <div x-show="activeTab === 'sales'" x-transition>
 
-                    <!-- Summary Strip -->
                     <div class="grid grid-cols-3 gap-3 mb-6">
                         <div class="relative overflow-hidden rounded-2xl bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 p-4">
                             <div class="absolute -right-3 -top-3 w-20 h-20 rounded-full bg-[#EE6D3C]/10"></div>
@@ -664,7 +741,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </div>
                     </div>
 
-                    <!-- Search & Date Filter -->
                     <div class="flex flex-wrap items-center gap-2 mb-5">
                         <div class="relative flex-1 min-w-[180px] max-w-xs">
                             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--admin-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -682,7 +758,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </select>
                     </div>
 
-                    <!-- Sales Table -->
                     <div class="w-full overflow-x-auto rounded-2xl border border-[var(--admin-border)] shadow-sm">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-[var(--admin-bg-primary)]">
@@ -728,7 +803,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </table>
                     </div>
 
-                    <!-- Sales Pagination -->
                     <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                         <p class="text-xs text-gray-400"
                             x-text="filteredSales.length
@@ -747,12 +821,9 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </div>
                     </div>
 
-                </div><!-- end sales -->
-
-            </div>
+                </div></div>
         </main>
 
-        <!-- EXPORT CONFIRM MODAL -->
         <div id="export-modal" :class="exportModal ? 'open' : ''" @click.self="exportModal = false">
             <div class="modal-box">
                 <div class="flex items-center gap-3 mb-4">
@@ -790,7 +861,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
             </div>
         </div>
 
-        <!-- TOAST -->
         <div id="toast" class="no-print">
             <div class="flex items-center gap-3 bg-gray-900 text-white px-5 py-3.5 rounded-2xl shadow-xl text-sm font-medium">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -800,7 +870,6 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
             </div>
         </div>
 
-        <!-- PRINTABLE (unchanged — uses Blade for full data) -->
         <div id="printable-invoice" class="hidden">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-bold uppercase underline">FastBite — Full Report</h1>

@@ -183,7 +183,7 @@
         },
 
         deleteOrder(id) {
-            if (!confirm('Delete order #' + id + '? This cannot be undone.')) return;
+            if (!confirm('Send a deletion request for order #' + id + '?')) return;
             fetch('/order/' + id, {
                 method: 'DELETE',
                 headers: {
@@ -195,11 +195,9 @@
             .then(r => r.json())
             .then(data => {
                 if (data.message) {
-                    this.orders = this.orders.filter(o => o.id !== id);
-                    if (this.orderPage > this.orderTotalPages) this.orderPage = Math.max(1, this.orderTotalPages);
-                    this.showToast('Order #' + id + ' deleted.');
+                    this.showToast(data.message);
                 } else {
-                    this.showToast('Delete failed', 'error');
+                    this.showToast(data.error || 'Delete request failed', 'error');
                 }
             })
             .catch(() => this.showToast('Network error', 'error'));

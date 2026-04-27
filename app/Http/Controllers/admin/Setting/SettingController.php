@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Setting;
 use App\Models\DeletionRequest;
+use App\Models\ResourceDeletionRequest;
 use App\Models\Logins;
+use App\Services\ResourceDeletionRequestService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -76,8 +78,15 @@ class SettingController extends Controller
 
     public function deletionRequests()
     {
-        $deletionRequests = DeletionRequest::with('user')->latest()->paginate(10);
-        return view('Admin.Settings.deletion-requests', compact('deletionRequests'));
+        $accountDeletionRequests = DeletionRequest::with('user')
+            ->latest()
+            ->paginate(10, ['*'], 'account_page');
+
+        $resourceDeletionRequests = ResourceDeletionRequest::with(['requester', 'approver'])
+            ->latest()
+            ->paginate(10, ['*'], 'resource_page');
+
+        return view('Admin.Settings.deletion-requests', compact('accountDeletionRequests', 'resourceDeletionRequests'));
     }
 
     public function approveDeletion($id)
@@ -131,5 +140,38 @@ class SettingController extends Controller
 
         return redirect()->route('deletion-requests.index')
             ->with('success', 'All approved deletion requests and their accounts have been deleted.');
+    }
+
+    public function approveResourceDeletion($id)
+    {
+        $request = ResourceDeletionRequest::findOrFail($id);
+
+        if ($request->status === 'pending') {
+            app(ResourceDeletionRequestService::class)->approve($request, Auth::id());
+        }
+
+        return redirect()->route('deletion-requests.index')
+            ->with('success', 'Resource deletion request approved.');
+    }
+
+    public function denyResourceDeletion($id)
+    {
+        $request = ResourceDeletionRequest::findOrFail($id);
+        $request->update([
+            'status' => 'denied',
+            'approved_by' => Auth::id(),
+            'approved_at' => now(),
+        ]);
+
+        return redirect()->route('deletion-requests.index')
+            ->with('success', 'Resource deletion request denied.');
+    }
+
+    public function deleteAllApprovedResourceRequests()
+    {
+        ResourceDeletionRequest::where('status', 'approved')->delete();
+
+        return redirect()->route('deletion-requests.index')
+            ->with('success', 'All approved resource deletion requests have been cleared.');
     }
 }
