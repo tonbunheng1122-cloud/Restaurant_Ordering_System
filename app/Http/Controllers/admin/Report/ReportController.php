@@ -18,14 +18,15 @@ class ReportController extends Controller
         $filter = $this->resolveReportFilter($request);
         $activeTab = $request->query('tab', 'reservations');
 
+        // All Products and Categories (Full Catalog)
         $productsQuery = Product::with('category');
         $categoriesQuery = Category::withCount('products');
+        
+        // Orders and Reservations (Filtered by Date)
         $ordersQuery = Order::with('items.product')->orderBy('created_at', 'desc');
         $orderItemsQuery = OrderItem::with('product');
         $reservationsQuery = Reservation::orderBy('created_at', 'desc');
 
-        $this->applyCreatedAtFilter($productsQuery, 'created_at', $filter);
-        $this->applyCreatedAtFilter($categoriesQuery, 'created_at', $filter);
         $this->applyCreatedAtFilter($ordersQuery, 'created_at', $filter);
         $this->applyCreatedAtFilter($orderItemsQuery, 'created_at', $filter);
         $this->applyDateColumnFilter($reservationsQuery, 'date', $filter);
@@ -36,13 +37,29 @@ class ReportController extends Controller
         $orderItems   = $orderItemsQuery->get();
         $reservations = $reservationsQuery->get();
 
+        // Totals for the CURRENT FILTERED PERIOD
         $completedOrders = $orders->where('status', 'completed');
         $grandTotal = $completedOrders->sum('total_amount');
-        $dailySalesTotal = $grandTotal;
-        $monthlySalesTotal = $grandTotal;
-        $todayTotal = $grandTotal;
-        $todayCount = $completedOrders->count();
-        $monthlyCount = $completedOrders->count();
+
+        // REAL-TIME Statistics (Independent of filter)
+        $todayStart = now()->startOfDay();
+        $todayEnd = now()->endOfDay();
+        $monthStart = now()->startOfMonth();
+        $monthEnd = now()->endOfMonth();
+
+        $todayOrders = Order::where('status', 'completed')
+            ->whereBetween('created_at', [$todayStart, $todayEnd])
+            ->get();
+        $monthOrders = Order::where('status', 'completed')
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->get();
+
+        $todayTotal = $todayOrders->sum('total_amount');
+        $todayCount = $todayOrders->count();
+        $monthlySalesTotal = $monthOrders->sum('total_amount');
+        $monthlyCount = $monthOrders->count();
+        $dailySalesTotal = $todayTotal; // For compatibility with existing view variable name
+
         $averageSale = (float) $completedOrders->avg('total_amount');
 
         $salesByDate = $completedOrders
@@ -101,7 +118,6 @@ class ReportController extends Controller
             case 'products':
                 $headers = ['ID', 'Name', 'Category', 'Price', 'Cost', 'Qty'];
                 $query = Product::with('category');
-                $this->applyCreatedAtFilter($query, 'created_at', $filter);
                 foreach ($query->get() as $p) {
                     $rows[] = [$p->id, $p->name, $p->category?->name ?? 'N/A', $p->price, $p->cost ?? 0, $p->qty ?? 'N/A'];
                 }
@@ -110,7 +126,6 @@ class ReportController extends Controller
             case 'categories':
                 $headers = ['ID', 'Name', 'Code', 'Total Products', 'Created At'];
                 $query = Category::withCount('products');
-                $this->applyCreatedAtFilter($query, 'created_at', $filter);
                 foreach ($query->get() as $c) {
                     $rows[] = [$c->id, $c->name, $c->code ?? '—', $c->products_count, $c->created_at->format('d M Y')];
                 }
@@ -190,8 +205,6 @@ class ReportController extends Controller
 
         $this->applyDateColumnFilter($reservationsQuery, 'date', $filter);
         $this->applyCreatedAtFilter($ordersQuery, 'created_at', $filter);
-        $this->applyCreatedAtFilter($productsQuery, 'created_at', $filter);
-        $this->applyCreatedAtFilter($categoriesQuery, 'created_at', $filter);
 
         $data = [
             'type'         => $type,

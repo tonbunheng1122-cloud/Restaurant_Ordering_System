@@ -36,10 +36,10 @@
                 <template x-for="product in paginatedProducts" :key="product.id">
                     <div class="bg-[var(--admin-card-bg)] rounded-3xl border border-[var(--admin-border)] shadow-sm overflow-hidden group relative">
                         <template x-if="product.qty <= 2 && product.qty > 0">
-                            <div class="absolute top-3 left-3 z-10 bg-amber-400 text-white text-xs font-bold px-2 py-1 rounded-full">⚠️ Low</div>
+                            <div class="absolute top-3 left-3 z-10 bg-amber-400 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Low</div>
                         </template>
                         <template x-if="product.qty <= 0">
-                            <div class="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">🚫 Out</div>
+                            <div class="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728"/></svg> Out</div>
                         </template>
                         <div class="p-3">
                             <img :src="getProductImage(product.image)" class="w-full h-40 md:h-48 object-cover rounded-2xl group-hover:scale-105 transition cursor-pointer" :alt="product.name">

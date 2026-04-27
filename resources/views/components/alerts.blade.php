@@ -17,7 +17,7 @@
 @endonce
 
 
-{{-- ✅ SUCCESS --}}
+{{-- SUCCESS --}}
 @if(session('success'))
 <div
     x-data="{ show: true }"
@@ -45,7 +45,7 @@
 @endif
 
 
-{{-- ❌ ERROR --}}
+{{-- ERROR --}}
 @if($errors->any())
 <div
     x-data="{ show: true }"
@@ -83,7 +83,7 @@
 @endif
 
 
-{{-- ⚠️ WARNING --}}
+{{-- WARNING --}}
 @if(session('warning'))
 <div
     x-data="{ show: true }"
@@ -109,7 +109,7 @@
 @endif
 
 
-{{-- ℹ️ INFO --}}
+{{-- INFO --}}
 @if(session('info'))
 <div
     x-data="{ show: true }"

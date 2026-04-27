@@ -321,12 +321,12 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                     </div>
                 </div>
 
-                <div class="mb-8 flex flex-col xl:flex-row xl:items-center justify-between rounded-[2.5rem] border border-orange-200 bg-[#FFF9F4] px-8 py-7 shadow-[0_8px_30px_rgba(238,109,60,0.04)]">
+                <div class="mb-8 flex flex-col xl:flex-row xl:items-center justify-between rounded-[2.5rem] border border-orange-200 dark:border-orange-500/20 bg-orange-50/30 dark:bg-orange-500/5 px-8 py-7 shadow-sm dark:shadow-none">
                     
                     <div>
-                        <p class="mb-1 text-[11px] font-black uppercase tracking-[0.2em] text-[#DE7351]">Report Period</p>
-                        <h3 class="text-3xl font-black text-[#1C2434] leading-tight">{{ $filter['label'] ?? '24 April 2026' }}</h3>
-                        <p class="mt-1 text-sm font-medium text-[#64748B]">{{ $filter['description'] ?? 'Showing all records for 24 April 2026.' }}</p>
+                        <p class="mb-1 text-[11px] font-black uppercase tracking-[0.2em] text-[#EE6D3C]">Report Period</p>
+                        <h3 class="text-3xl font-black text-[var(--admin-text-primary)] leading-tight">{{ $filter['label'] ?? '24 April 2026' }}</h3>
+                        <p class="mt-1 text-sm font-medium text-[var(--admin-text-secondary)]">{{ $filter['description'] ?? 'Showing all records for 24 April 2026.' }}</p>
                     </div>
 
                     <form method="GET" action="{{ route('report.index') }}" class="mt-8 xl:mt-0 flex flex-wrap items-end gap-3">
@@ -334,15 +334,15 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         <input type="hidden" name="report_mode" :value="reportMode">
 
                         <div class="flex items-center gap-4 mr-2">
-                            <span class="text-[10px] font-black uppercase tracking-[0.15em] text-[#64748B]">Date Mode</span>
-                            <div class="flex rounded-[1.25rem] border border-orange-200 bg-white p-1">
+                            <span class="text-[10px] font-black uppercase tracking-[0.15em] text-[var(--admin-text-secondary)]">Date Mode</span>
+                            <div class="flex rounded-[1.25rem] border border-orange-200 dark:border-orange-500/20 bg-[var(--admin-bg-primary)] dark:bg-[var(--admin-bg-primary)] p-1">
                                 <button type="button" @click="reportMode = 'day'"
-                                    :class="reportMode === 'day' ? 'bg-[#DE7351] text-white shadow-sm' : 'text-slate-500 hover:text-[#DE7351]'"
+                                    :class="reportMode === 'day' ? 'bg-[#DE7351] text-white shadow-sm' : 'text-[var(--admin-text-secondary)] hover:text-[#DE7351]'"
                                     class="rounded-xl px-6 py-2.5 text-sm font-bold transition-all">
                                     Day
                                 </button>
                                 <button type="button" @click="reportMode = 'month'"
-                                    :class="reportMode === 'month' ? 'bg-[#DE7351] text-white shadow-sm' : 'text-slate-500 hover:text-[#DE7351]'"
+                                    :class="reportMode === 'month' ? 'bg-[#DE7351] text-white shadow-sm' : 'text-[var(--admin-text-secondary)] hover:text-[#DE7351]'"
                                     class="rounded-xl px-6 py-2.5 text-sm font-bold transition-all">
                                     Month
                                 </button>
@@ -350,10 +350,15 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </div>
 
                         <div class="relative flex flex-col items-center ml-1" x-show="reportMode === 'day'" x-cloak>
-                            <label class="absolute -top-6 left-1 text-[10px] font-black uppercase tracking-[0.15em] text-[#64748B]">Pick Day</label>
-                            <div class="relative flex h-[52px] w-[88px] items-center justify-center rounded-[1.25rem] border border-orange-200 bg-white">
-                                <input x-ref="dayPicker" type="date" name="report_date" value="{{ $filter['report_date'] ?? '' }}" class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0">
-                                <button type="button" class="flex h-10 w-[70px] items-center justify-center rounded-[0.85rem] bg-[#DE7351] text-white shadow-sm pointer-events-none">
+                            <label for="report_date_input" class="absolute -top-6 left-1 text-[10px] font-black uppercase tracking-[0.15em] text-[var(--admin-text-secondary)] cursor-pointer">Pick Day</label>
+                            <div class="relative flex h-[52px] w-[100px] items-center justify-center rounded-[1.25rem] border border-orange-200 dark:border-orange-500/20 bg-[var(--admin-bg-primary)] transition-all hover:border-[#DE7351] hover:shadow-sm cursor-pointer"
+                                 @click="($refs.dayPicker.showPicker ? $refs.dayPicker.showPicker() : $refs.dayPicker.click())">
+                                <input id="report_date_input" x-ref="dayPicker" type="date" name="report_date" 
+                                    value="{{ $filter['report_date'] ?? '' }}" 
+                                    @change="$el.form.submit()"
+                                    class="absolute inset-0 z-0 h-full w-full opacity-0 pointer-events-none">
+                                <button type="button"
+                                    class="flex h-10 w-[80px] items-center justify-center rounded-[0.85rem] bg-[#DE7351] text-white shadow-sm pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
                                     </svg>
@@ -362,10 +367,15 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </div>
 
                         <div class="relative flex flex-col items-center ml-1" x-show="reportMode === 'month'" x-cloak>
-                            <label class="absolute -top-6 left-1 text-[10px] font-black uppercase tracking-[0.15em] text-[#64748B]">Pick Month</label>
-                            <div class="relative flex h-[52px] w-[88px] items-center justify-center rounded-[1.25rem] border border-orange-200 bg-white">
-                                <input x-ref="monthPicker" type="month" name="report_month" value="{{ $filter['report_month'] ?? '' }}" class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0">
-                                <button type="button" class="flex h-10 w-[70px] items-center justify-center rounded-[0.85rem] bg-[#DE7351] text-white shadow-sm pointer-events-none">
+                            <label for="report_month_input" class="absolute -top-6 left-1 text-[10px] font-black uppercase tracking-[0.15em] text-[var(--admin-text-secondary)] cursor-pointer">Pick Month</label>
+                            <div class="relative flex h-[52px] w-[100px] items-center justify-center rounded-[1.25rem] border border-orange-200 dark:border-orange-500/20 bg-[var(--admin-bg-primary)] transition-all hover:border-[#DE7351] hover:shadow-sm cursor-pointer"
+                                 @click="($refs.monthPicker.showPicker ? $refs.monthPicker.showPicker() : $refs.monthPicker.click())">
+                                <input id="report_month_input" x-ref="monthPicker" type="month" name="report_month" 
+                                    value="{{ $filter['report_month'] ?? '' }}" 
+                                    @change="$el.form.submit()"
+                                    class="absolute inset-0 z-0 h-full w-full opacity-0 pointer-events-none">
+                                <button type="button"
+                                    class="flex h-10 w-[80px] items-center justify-center rounded-[0.85rem] bg-[#DE7351] text-white shadow-sm pointer-events-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
                                     </svg>
@@ -380,7 +390,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                             Submit Filter
                         </button>
 
-                        <a href="{{ route('report.index') }}" class="flex h-[52px] items-center justify-center rounded-[1.25rem] border border-gray-200 bg-white px-6 text-sm font-bold text-[#475569] transition hover:bg-gray-50 hover:text-gray-900 shadow-sm ml-1">
+                        <a href="{{ route('report.index') }}" class="flex h-[52px] items-center justify-center rounded-[1.25rem] border border-[var(--admin-border)] bg-[var(--admin-bg-primary)] px-6 text-sm font-bold text-[var(--admin-text-secondary)] transition hover:bg-[var(--admin-card-bg)] hover:text-[var(--admin-text-primary)] shadow-sm ml-1">
                             Reset
                         </a>
                     </form>
@@ -441,6 +451,12 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
+                        <select x-model="selectedTable" class="py-2.5 px-4 border border-[var(--admin-border)] rounded-xl text-sm bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] outline-none focus:ring-2 focus:ring-orange-200">
+                            <option value="All">All Tables</option>
+                            @foreach($reservations->pluck('table_id')->unique()->sort() as $tid)
+                                <option value="{{ $tid }}">Table {{ $tid }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="w-full overflow-x-auto rounded-xl border border-[var(--admin-border)]">
                         <table class="w-full text-left text-sm">
@@ -751,7 +767,7 @@ $salesJson = $completedOrders->sortByDesc('created_at')->map(fn($s) => [
                         </div>
                         <select x-model="selectedSaleDate"
                             class="py-2 px-3 rounded-xl border border-[var(--admin-border)] bg-[var(--admin-bg-primary)] text-[var(--admin-text-primary)] text-sm outline-none focus:ring-2 focus:ring-[#EE6D3C]/30 focus:border-[#EE6D3C]/50 transition">
-                            <option value="All">📅 All Dates</option>
+                            <option value="All">All Dates</option>
                             @foreach($salesByDate->keys() as $dk)
                                 <option value="{{ $dk }}">{{ \Carbon\Carbon::parse($dk)->format('d M Y') }}</option>
                             @endforeach

@@ -162,8 +162,11 @@
                         <p class="text-sm text-[var(--admin-text-secondary)]">Latest additions to your menu</p>
                     </div>
                     <a href="{{ route('menu.index') }}"
-                       class="text-sm font-bold text-[#EE6D3C] hover:text-orange-600 transition tracking-wide uppercase">
-                        Order now →
+                       class="text-sm font-bold text-[#EE6D3C] hover:text-orange-600 transition tracking-wide uppercase flex items-center gap-1">
+                        Order now 
+                        <svg class="w-4 h-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
                     </a>
                 </div>
                 <div class="space-y-4 max-h-64 overflow-y-auto custom-scrollbar pr-2">

@@ -43,6 +43,14 @@ git clone < repository-url > && cd Restaurant_Ordering_System
 # 2. Automated Foundation Setup
 composer run setup
 
+# Which is equivalent to running these manually:
+# composer install
+# cp .env.example .env
+# php artisan key:generate
+# php artisan migrate --force
+# npm install
+# npm run build
+
 # 3. Seed Admin Access
 php artisan db:seed --class=AdminSeeder
 ```
@@ -74,6 +82,24 @@ Connect your restaurant directly to your pocket with instant Telegram alerts.
 3. **Connect**: Update your `.env` file with the **Token** and **Chat ID**.
 
 *The system will automatically notify you of New Orders, Status Changes, and Stock Warnings.*
+
+---
+
+## 📱 Running on Local Network (LAN)
+
+If you want to access the system from a phone, tablet, or another computer on the same WiFi network (e.g., for kitchen staff or waiters):
+
+1. **Build frontend assets** (so you don't need a running Vite server):
+   ```bash
+   npm run build
+   ```
+2. **Start the server on your network IP**:
+   ```bash
+   php artisan serve --host=0.0.0.0 --port=8000
+   ```
+3. **Access it on other devices**:
+   Find your computer's IP address (e.g., `[IP_ADDRESS]`) and open this in the device's browser: 
+   `http://[IP_ADDRESS]`
 
 ---
 

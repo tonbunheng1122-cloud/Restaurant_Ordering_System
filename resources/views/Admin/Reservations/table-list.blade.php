@@ -72,7 +72,7 @@
                                 <td class="p-4 hidden md:table-cell text-[var(--admin-text-secondary)]">{{ $res->phone_number }}</td>
                                 <td class="p-4 hidden md:table-cell">
                                     <span class="bg-gray-100/10 text-[var(--admin-text-secondary)] px-3 py-1 rounded-full text-xs font-bold border border-[var(--admin-border)]">
-                                        👥 {{ $res->guest_count }}
+                                        <svg class="w-3.5 h-3.5 inline-block -mt-0.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg> {{ $res->guest_count }}
                                     </span>
                                 </td>
                                 <td class="p-4 hidden lg:table-cell">

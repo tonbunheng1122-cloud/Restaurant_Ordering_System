@@ -19,13 +19,13 @@
 <body>
 
 <!-- TOAST -->
-<div class="toast" id="toast">✓ <span id="toast-text"></span></div>
+<div class="toast" id="toast"><svg class="w-4 h-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> <span id="toast-text"></span></div>
 
 <!-- MOBILE NAV -->
 <div class="mobile-nav" id="mobileNav">
-    <button class="close-nav" id="closeNav">✕</button>
+    <button class="close-nav" id="closeNav"><svg class="w-5 h-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
     <a href="#menu" onclick="closeMobileNav()">Menu</a>
-    <a class="nav-cta" href="#menu" onclick="closeMobileNav()">🛒 Order Now</a>
+    <a class="nav-cta" href="#menu" onclick="closeMobileNav()"><svg class="w-5 h-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Order Now</a>
 </div>
 
 <!-- NAV -->
@@ -43,17 +43,17 @@
             </li>
             <li>
                 <button class="cart-nav-btn" onclick="openCart()">
-                    🛒 Cart
+                    <svg class="w-5 h-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Cart
                     <span class="cart-nav-count hidden" id="cartNavCount">0</span>
                 </button>
             </li>
-            <li><a class="nav-cta" href="#menu">Order Now →</a></li>
+            <li><a class="nav-cta" href="#menu">Order Now <svg class="w-4 h-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></a></li>
             <li><a class="nav-cta" href="{{ route('login') }}">Sign In</a></li>
         </ul>
 
         <div style="display:flex;align-items:center;gap:0.75rem;">
             <button class="cart-nav-btn" onclick="openCart()" style="display:none;" id="mobileCartBtn">
-                🛒 <span class="cart-nav-count hidden" id="mobileCartCount">0</span>
+                <svg class="w-5 h-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg> <span class="cart-nav-count hidden" id="mobileCartCount">0</span>
             </button>
             <button class="hamburger" id="hamburger">
                 <span></span><span></span><span></span>
@@ -115,7 +115,7 @@
                     @if($isOut)
                         <div class="stock-badge">Out of Stock</div>
                     @elseif($isLow)
-                        <div class="low-badge">⚠️ Low Stock</div>
+                        <div class="low-badge"><svg class="w-3.5 h-3.5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg> Low Stock</div>
                     @endif
                 </div>
 
@@ -156,7 +156,7 @@
             </div>
         @empty
             <div class="no-products">
-                <span class="no-products-icon">🍽️</span>
+                <span class="no-products-icon"><svg class="w-8 h-8 inline-block text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></span>
                 <p style="font-weight:600;font-size:1.1rem;margin-bottom:.5rem;">No products yet</p>
                 <p>Check back soon for our amazing dishes!</p>
             </div>
@@ -172,15 +172,15 @@
 <div class="cart-drawer" id="cartDrawer">
     <div class="cart-header">
         <div>
-            <div class="cart-title">Order 🛒</div>
+            <div class="cart-title"><svg class="w-5 h-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Order</div>
             <div class="cart-item-count" id="cartItemCount">0 items</div>
         </div>
-        <button class="cart-close" onclick="closeCart()">✕</button>
+        <button class="cart-close" onclick="closeCart()"><svg class="w-5 h-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
     </div>
 
     <div class="cart-items" id="cartItems">
         <div class="cart-empty" id="cartEmpty">
-            <span class="cart-empty-icon">🛒</span>
+            <span class="cart-empty-icon"><svg class="w-5 h-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg></span>
             <p style="font-weight:600;color:var(--mid);">Your cart is empty</p>
             <p style="font-size:0.82rem;">Add some delicious dishes!</p>
         </div>
@@ -192,7 +192,7 @@
             <span class="cart-subtotal-value" id="cartTotal">$0.00</span>
         </div>
         <button class="btn-checkout" id="checkoutBtn" onclick="openCheckout()" disabled>
-            Send to Kitchen →
+            Send to Kitchen <svg class="w-4 h-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
         </button>
     </div>
 </div>
@@ -247,7 +247,7 @@
 <!-- SUCCESS MODAL -->
 <div class="success-overlay" id="successOverlay">
     <div class="success-modal">
-        <span class="success-icon">🎉</span>
+        <span class="success-icon"><svg class="w-12 h-12 inline-block text-emerald-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
         <div class="success-title">Order Sent!</div>
         <p class="success-msg" id="successMsg">Your order has been sent to the kitchen!</p>
         <button class="btn-success-close" onclick="closeSuccess()">Back to Menu</button>
@@ -287,8 +287,8 @@
             <div class="footer-col">
                 <div class="footer-col-title">Quick Links</div>
                 <ul class="footer-links">
-                    <li><a href="#menu">🍽️ Our Menu</a></li>
-                    <li><a href="#" onclick="openCart()">🛒 My Cart</a></li>
+                    <li><a href="#menu"><svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> Our Menu</a></li>
+                    <li><a href="#" onclick="openCart()"><svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg> My Cart</a></li>
                 </ul>
             </div>
 
@@ -296,7 +296,7 @@
             <div class="footer-col">
                 <div class="footer-col-title">Categories</div>
                 <ul class="footer-links">
-                    <li><a href="#menu" onclick="filterMenu(document.querySelector('.filter-tab'),'all')">🍴 All Dishes</a></li>
+                    <li><a href="#menu" onclick="filterMenu(document.querySelector('.filter-tab'),'all')"><svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg> All Dishes</a></li>
                     @foreach($categories->take(5) as $cat)
                         <li>
                             <a href="#menu" onclick="filterMenuById('{{ $cat->id }}')">
@@ -317,7 +317,7 @@
                 </div>
 
                 <div class="footer-hours">
-                    <div class="footer-hours-title">⏰ Opening Hours</div>
+                    <div class="footer-hours-title"><svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Opening Hours</div>
                     <div class="footer-hours-row">
                         <span>Mon – Fri</span>
                         <span>7:00 AM – 10:00 PM</span>
@@ -332,12 +332,12 @@
 
         <div class="footer-bottom">
             <p class="footer-copy">
-                © {{ date('Y') }} FastBite. Made with ❤️ for great food.
+                © {{ date('Y') }} FastBite. Made with <svg class="w-4 h-4 inline-block text-red-500 mx-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg> for great food.
             </p>
             <div class="footer-badges">
-                <span class="footer-badge">🔒 Secure Orders</span>
-                <span class="footer-badge">🚀 Fast Service</span>
-                <span class="footer-badge">🌿 Fresh Ingredients</span>
+                <span class="footer-badge"><svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Secure Orders</span>
+                <span class="footer-badge"><svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Fast Service</span>
+                <span class="footer-badge"><svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg> Fresh Ingredients</span>
             </div>
         </div>
     </div>
